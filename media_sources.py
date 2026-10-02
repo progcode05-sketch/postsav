@@ -3,6 +3,7 @@ import html
 import json
 import os
 import re
+import time
 from urllib.parse import urlsplit
 
 import requests
@@ -279,7 +280,14 @@ def _pinterest_mp4_from_page(raw, video):
 def pinterest_post(url):
     """Extract the original image or video from a public Pinterest pin via its schema.org markup."""
     try:
-        raw, _ = fetch(url, 'pinterest', page=True)
+        try:
+            raw, _ = fetch(url, 'pinterest', page=True)
+        except requests.HTTPError as first:
+            # Pinterest throttles bursts per IP for a few seconds; one short pause usually clears it.
+            if first.response is None or first.response.status_code not in (403, 429):
+                raise
+            time.sleep(3)
+            raw, _ = fetch(url, 'pinterest', page=True)
     except requests.HTTPError as err:
         status = err.response.status_code if err.response is not None else 0
         if status in (404, 410):

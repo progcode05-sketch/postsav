@@ -209,12 +209,20 @@ class ExtractionTests(unittest.TestCase):
         def failing(status):
             return requests.HTTPError(response=MagicMock(status_code=status))
         for status, text in ((404, 'could not find this pin'), (410, 'could not find this pin'), (403, 'limiting requests'), (429, 'limiting requests')):
-            with patch('media_sources.fetch', side_effect=failing(status)):
+            with patch('media_sources.time.sleep'), patch('media_sources.fetch', side_effect=failing(status)):
                 with self.assertRaisesRegex(ValueError, text):
                     pinterest_post(PIN_URL)
-        with patch('media_sources.fetch', side_effect=failing(500)):
+        with patch('media_sources.fetch', side_effect=failing(500)) as fetch_mock:
             with self.assertRaises(requests.HTTPError):
                 pinterest_post(PIN_URL)
+        self.assertEqual(fetch_mock.call_count, 1)
+
+    def test_one_throttled_response_is_retried_once(self):
+        throttled = requests.HTTPError(response=MagicMock(status_code=429))
+        with patch('media_sources.time.sleep') as pause, patch('media_sources.fetch', side_effect=[throttled, (page(posting(), video()), 'text/html')]) as fetch_mock:
+            self.assertEqual(pinterest_post(PIN_URL)['assets'][0]['source'], MP4)
+        self.assertEqual(fetch_mock.call_count, 2)
+        pause.assert_called_once()
 
     def test_page_is_always_fetched_from_www_pinterest_com(self):
         self.assertEqual(app.clean_url('https://in.pinterest.com/pin/slug--' + PIN_ID + '/'), PIN_URL)

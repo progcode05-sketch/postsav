@@ -1,7 +1,8 @@
 """Opt-in SEO/GEO check of a deployed site: crawler files, per-page metadata, structured data and links.
 
 Usage: python verify_seo.py https://your-site.example [--external]
---external also requests every outbound link (official help pages, terms) and reports their status.
+--external also requests every outbound link (official help pages, terms). Sites that refuse automated requests
+(401/403/429, or Instagram's help center answering 400) are reported as WARN, not as broken links.
 """
 import json
 import re
@@ -83,7 +84,12 @@ def check_site(site, external=False):
         print('== outbound links')
         for link in sorted(links):
             response = requests.get(link, headers=UA, timeout=60)
-            report.check(response.status_code < 400, f'{response.status_code} {link}')
+            status = response.status_code
+            blocks_bots = status in (401, 403, 429, 999) or (status == 400 and 'instagram.com' in link)
+            if blocks_bots:
+                print(f'  WARN  {status} {link} (the site refuses automated requests; open it in a browser to confirm it works)')
+            else:
+                report.check(status < 400, f'{status} {link}')
     print(f'\n{"ALL CHECKS PASSED" if not report.failures else str(report.failures) + " CHECK(S) FAILED"}')
     return report.failures
 
