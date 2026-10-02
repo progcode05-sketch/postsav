@@ -1,0 +1,33 @@
+# Render Blueprint: free web service (Docker) + free Key Value (Redis-compatible) in one region.
+# Free tier: web service 512 MB / 0.1 CPU, spins down after 15 idle minutes; Key Value 25 MB, in-memory.
+services:
+  - type: web
+    name: social-downloader
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      - key: PUBLIC_MODE
+        value: "1"
+      - key: CONTACT_EMAIL
+        value: progcode03@gmail.com
+      # Render sits behind Cloudflare; CF-Connecting-IP is the real client address.
+      - key: CLIENT_IP_HEADER
+        value: CF-Connecting-IP
+      - key: TRUSTED_PROXY_HOPS
+        value: "0"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: social-downloader-kv
+          property: connectionString
+
+  - type: keyvalue
+    name: social-downloader-kv
+    plan: free
+    region: oregon
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: []   # internal connections from the web service only

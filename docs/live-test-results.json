@@ -1,0 +1,145 @@
+{
+  "checked_at_utc": "2026-10-02T00:17:09.563752+00:00",
+  "results": [
+    {
+      "label": "LinkedIn short-link video",
+      "url": "https://lnkd.in/p/dSMQHtWn",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 10269621
+    },
+    {
+      "label": "LinkedIn short-link image",
+      "url": "https://lnkd.in/p/dEm7VwWv",
+      "kinds": [
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 54727
+    },
+    {
+      "label": "LinkedIn image",
+      "url": "https://www.linkedin.com/posts/rhea-space-activity_spacephotography-photography-nasa-activity-6986886128238784512-QUyP",
+      "kinds": [
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 92352
+    },
+    {
+      "label": "LinkedIn eight images",
+      "url": "https://www.linkedin.com/posts/friends-of-nasa_nasa-csa-space-activity-7110625973888266241-bZ_g",
+      "kinds": [
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 1247007
+    },
+    {
+      "label": "LinkedIn feed URL four images",
+      "url": "https://www.linkedin.com/feed/update/urn:li:activity:7361048900801077248/",
+      "kinds": [
+        "image",
+        "image",
+        "image",
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 257743
+    },
+    {
+      "label": "LinkedIn video",
+      "url": "https://www.linkedin.com/posts/the-mathworks_2_what-is-mathworks-cloud-center-activity-7151241570371948544-4Gu7",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 5602080
+    },
+    {
+      "label": "LinkedIn document",
+      "url": "https://www.linkedin.com/posts/richardvanderblom_how-to-create-the-perfect-carousel-post-on-activity-7138425457561006080-VOAi",
+      "kinds": [
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image"
+      ],
+      "warnings": [
+        "The original document requires LinkedIn sign-in; available slides can be saved as images or ZIP."
+      ],
+      "status": "PASS",
+      "bytes": 4882951
+    },
+    {
+      "label": "Instagram reel",
+      "url": "https://www.instagram.com/reel/DdJW4CIOK6H/",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 6521536
+    },
+    {
+      "label": "Instagram photo",
+      "url": "https://www.instagram.com/p/BwFQEn0j7v1/",
+      "kinds": [
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 141808
+    },
+    {
+      "label": "Instagram video carousel",
+      "url": "https://www.instagram.com/p/BQ0eAlwhDrw/",
+      "kinds": [
+        "video",
+        "video",
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 3526393
+    },
+    {
+      "label": "Instagram image carousel",
+      "url": "https://www.instagram.com/p/DJS2jZXptzr/",
+      "kinds": [
+        "image",
+        "image",
+        "image",
+        "image",
+        "image",
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 2192415
+    }
+  ]
+}

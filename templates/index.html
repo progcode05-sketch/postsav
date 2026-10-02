@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Download available images, videos and carousel slides from Instagram and LinkedIn posts.">
+<title>Social Downloader · Instagram & LinkedIn</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1018;--card:#171c29;--line:#30394b;--text:#f3f5fc;--muted:#a6b1c7;--accent:#8074ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#202342 0, var(--bg) 65%);color:var(--text);font:16px/1.5 system-ui,sans-serif;padding:56px 20px}main{max-width:880px;margin:auto}.eyebrow{color:#b5adff;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}h1{font-size:clamp(32px,6vw,50px);line-height:1.15;letter-spacing:-.04em;margin:14px 0}h1 span{color:#b3aaff}.sub{color:var(--muted);max-width:630px;margin-bottom:24px}.tags{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}.tag{border:1px solid var(--line);padding:6px 12px;border-radius:20px;font-size:13px;color:var(--muted)}form{display:flex;gap:10px;padding:10px;border:1px solid var(--line);border-radius:16px;background:var(--card)}input{flex:1;min-width:0;border:0;background:transparent;padding:12px;color:var(--text);font:inherit}input:focus{outline:2px solid var(--accent);border-radius:8px}button{border:0;border-radius:10px;padding:12px 18px;background:var(--accent);color:white;font:600 14px system-ui;cursor:pointer}button:disabled{opacity:.55;cursor:wait}.ghost{background:transparent;border:1px solid var(--line);color:var(--muted)}#msg{min-height:24px;margin:14px 0;color:var(--muted)}#msg.err{color:#ff9e9e}#result[hidden]{display:none}.post{display:flex;justify-content:space-between;gap:16px;align-items:center;border-bottom:1px solid var(--line);padding:16px 0;margin-bottom:20px}.post p{margin:6px 0;color:var(--muted);font-size:14px}.actions{display:flex;gap:8px;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px}.asset{overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--card)}.preview{width:100%;height:240px;object-fit:contain;background:#0b0e15}.placeholder{height:240px;display:grid;place-items:center;font-size:40px;color:var(--muted)}.asset-meta{padding:14px}.asset-meta p{margin:0 0 12px;font-size:14px}.asset-meta button{width:100%}#warnings{color:#dfc59b;font-size:14px;margin-bottom:16px}.ack{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;color:var(--muted);font-size:14px}.ack input{flex:none;width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}footer a{color:#b5adff}footer{margin-top:36px;color:var(--muted);font-size:12px}footer p{margin:6px 0}@media(max-width:550px){body{padding:28px 16px}form,.post{flex-direction:column;align-items:stretch}.grid{grid-template-columns:1fr 1fr}.preview,.placeholder{height:170px}.asset-meta{padding:10px}.asset-meta button{padding:10px 6px}}
+</style>
+</head>
+<body><main>
+<div class="eyebrow">Instagram + LinkedIn</div>
+<h1>Your favorite posts.<br><span>Ready to save.</span></h1>
+<p class="sub">Download images and videos from Instagram or LinkedIn. Save carousel slides individually, or download all available attachments in one ZIP.</p>
+<div class="tags"><span class="tag">Images</span><span class="tag">Videos</span><span class="tag">Carousel slides</span></div>
+{% if public_mode %}<label class="ack"><input type="checkbox" id="ack"><span>I own this content or have permission to download it, and I accept the <a href="/terms" target="_blank" rel="noopener">Terms</a>.</span></label>{% endif %}
+<form id="f"><input id="url" type="url" aria-label="Instagram or LinkedIn post URL" placeholder="Paste an Instagram, LinkedIn, or lnkd.in post URL" autocomplete="off" required><button id="go">Fetch media</button></form>
+<div id="msg" role="status" aria-live="polite"></div>
+<section id="result" hidden><div class="post"><div><strong id="who"></strong><p id="caption"></p></div><div class="actions"><button id="all">Download all · ZIP</button><button class="ghost" id="again">New link</button></div></div><div id="warnings"></div><div class="grid" id="assets"></div></section>
+<footer><p>Publicly accessible posts work best. Availability depends on the platform; private or sign-in-only media may be unavailable.</p>{% if public_mode %}<p>Download only content you own or have permission to use. We do not store posts or files: downloads are prepared temporarily and deleted when they finish.</p><p><a href="/terms">Terms</a> · <a href="/privacy">Privacy</a> · <a href="/copyright">Copyright &amp; takedown</a> · <a href="/contact">Contact</a></p>{% else %}<p>Runs locally on your computer. Download only content you own or have permission to use.</p>{% endif %}</footer>
+</main>
+<script>
+const PUBLIC_MODE={{ 'true' if public_mode else 'false' }};
+const $=id=>document.getElementById(id);
+const setMsg=(text,error=false)=>{$('msg').textContent=text;$('msg').className=error?'err':''};
+let current=null, generation=0, controller=null, downloading=false, fetchingURL=null;
+async function readJSON(res){
+ const type=res.headers.get('Content-Type')||'';
+ if(!type.includes('application/json'))throw new Error('The server could not complete this request. Please try again.');
+ return res.json();
+}
+async function download(asset,button){
+ if(!current || downloading)return;
+ downloading=true;document.querySelectorAll('button').forEach(b=>b.disabled=true);setMsg(asset==='all'?'Preparing your ZIP…':'Downloading attachment…');
+ try{
+  const res=await fetch('/api/download?'+new URLSearchParams({session:current.session,asset}));
+  if(!res.ok){const data=await readJSON(res);throw new Error(data.error||'Download failed.')}
+  const blob=await res.blob(), link=document.createElement('a'), objectURL=URL.createObjectURL(blob);
+  const disposition=res.headers.get('Content-Disposition')||'';
+  const encoded=disposition.match(/filename\*=UTF-8''([^;]+)/i), plain=disposition.match(/filename="?([^";]+)"?/i);
+  link.download=encoded?decodeURIComponent(encoded[1]):plain?plain[1]:'download';
+  link.href=objectURL;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(objectURL),60000);
+  setMsg('Download ready. Check your browser downloads.');
+ }catch(err){setMsg(err.message,true)}finally{document.querySelectorAll('button').forEach(b=>b.disabled=false);downloading=false}
+}
+$('url').addEventListener('paste',()=>setTimeout(()=>{if(PUBLIC_MODE&&!$('ack').checked){setMsg('Tick the confirmation box, then press Fetch media.',true);return}$('f').requestSubmit()},0));
+$('f').addEventListener('submit',async e=>{
+ e.preventDefault();if(downloading){setMsg('Wait for the current download to finish.');return}
+ if(PUBLIC_MODE&&!$('ack').checked){setMsg('Please confirm that you own this content or have permission to download it.',true);return}
+ const enteredURL=$('url').value.trim();if(fetchingURL===enteredURL)return;fetchingURL=enteredURL;
+ controller?.abort();controller=new AbortController();const mine=++generation;
+ current=null;$('result').hidden=true;$('go').disabled=true;setMsg('Finding available media…');
+ try{
+  const res=await fetch('/api/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:enteredURL,ack:PUBLIC_MODE?$('ack').checked:undefined}),signal:controller.signal});
+  const data=await readJSON(res);if(mine!==generation)return;if(!res.ok)throw new Error(data.error||'Could not fetch this post.');
+  current=data;$('who').textContent=(data.platform==='linkedin'?'LinkedIn':'Instagram')+(data.uploader?' · '+data.uploader:'');$('caption').textContent=data.title;
+  $('warnings').textContent=(data.warnings||[]).join(' ');$('assets').replaceChildren();
+  for(const asset of data.assets){
+   const card=document.createElement('article');card.className='asset';
+   if(asset.thumbnail){const img=document.createElement('img');img.className='preview';img.src=asset.thumbnail;img.alt=asset.label;img.referrerPolicy='no-referrer';img.loading='lazy';img.addEventListener('error',()=>{const placeholder=document.createElement('div');placeholder.className='placeholder';placeholder.textContent=asset.kind==='video'?'▶':'▤';img.replaceWith(placeholder)},{once:true});card.append(img)}
+   else{const placeholder=document.createElement('div');placeholder.className='placeholder';placeholder.textContent=asset.kind==='video'?'▶':'▤';card.append(placeholder)}
+   const meta=document.createElement('div');meta.className='asset-meta';const label=document.createElement('p');label.textContent=asset.label;
+   const button=document.createElement('button');button.textContent=asset.kind==='video'?'Download video':asset.kind==='document'?'Download PDF':'Download image';button.addEventListener('click',()=>download(asset.id,button));meta.append(label,button);card.append(meta);$('assets').append(card);
+  }
+  $('all').hidden=data.assets.length<2;$('result').hidden=false;setMsg(`${data.assets.length} attachment${data.assets.length===1?'':'s'} ready · links expire in 15 minutes`);
+ }catch(err){if(mine===generation&&err.name!=='AbortError')setMsg(err.message,true)}finally{if(mine===generation){$('go').disabled=false;fetchingURL=null}}
+});
+$('all').addEventListener('click',()=>download('all',$('all')));
+$('again').addEventListener('click',()=>{if(downloading)return;controller?.abort();generation++;current=null;fetchingURL=null;$('result').hidden=true;$('go').disabled=false;$('url').value='';setMsg('');$('url').focus()});
+</script></body></html>

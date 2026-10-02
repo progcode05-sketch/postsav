@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>{{ title }} · Social Downloader</title>
+<style>
+:root{color-scheme:dark;--bg:#0d1018;--card:#171c29;--line:#30394b;--text:#f3f5fc;--muted:#a6b1c7;--accent:#8074ff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#202342 0,var(--bg) 65%);color:var(--text);font:16px/1.6 system-ui,sans-serif;padding:48px 20px}
+main{max-width:760px;margin:auto}nav{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:28px;font-size:14px}a{color:#b5adff}nav a[aria-current]{color:var(--text);text-decoration:none;font-weight:700}
+h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.03em;margin:0 0 6px}h2{font-size:19px;margin:28px 0 6px}p,li{color:var(--muted)}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}.warn{border-color:#8a6d2f;color:#f0d79a}
+</style>
+</head>
+<body><main>
+<nav><a href="/">← Downloader</a>{% for slug, name in pages.items() %}<a href="/{{ slug }}"{% if slug == page %} aria-current="page"{% endif %}>{{ name }}</a>{% endfor %}</nav>
+<h1>{{ title }}</h1>
+<p>Social Downloader is a free beta tool. {% if operator %}It is operated by {{ operator }}.{% endif %}</p>
+{% if not email %}<p class="card warn">The contact address for this service has not been configured yet. Until they are, this page is incomplete.</p>{% endif %}
+
+{% if page == 'terms' %}
+<h2>What the service does</h2>
+<p>You paste the link of a public Instagram or LinkedIn post. The service fetches the images, videos or document slides that the platform makes publicly available and lets you save them to your device individually or as a ZIP file.</p>
+<h2>Your responsibilities</h2>
+<p>Use the service only for content you own or have permission to download. You are responsible for how you use downloaded material, including respecting copyright, the rights of the people shown, and the terms of Instagram and LinkedIn. Do not use the service to harass anyone, to bypass access restrictions, or to download content in bulk. The service does not provide, and you must not attempt to supply, login credentials or cookies.</p>
+<h2>Limits and availability</h2>
+<p>The service is provided as is during a beta, without any guarantee that a given post can be fetched. Platforms change and may block requests. Requests are rate limited, files are limited to 250&nbsp;MB each and ZIP bundles to 500&nbsp;MB, and access may be restricted or removed at any time to protect the service.</p>
+<h2>No affiliation</h2>
+<p>This service is not affiliated with or endorsed by Instagram, Meta or LinkedIn. Those names belong to their owners.</p>
+<h2>Changes</h2>
+<p>These terms may change while the service is in beta. Continuing to use the service means you accept the current version.</p>
+
+{% elif page == 'privacy' %}
+<h2>What we process</h2>
+<p>The post link you submit is sent to our server, which contacts Instagram or LinkedIn to find the media. We keep the details of that post (caption, uploader name and media addresses) only so your download links work, for at most {{ ttl }} minutes, in the server's memory or in a short-lived Redis entry that expires on its own. We do not keep a history of the links you submit.</p>
+<h2>Files</h2>
+<p>Media you download is written to temporary storage on the server while it is being prepared and streamed to you. It is deleted as soon as the transfer finishes or is interrupted. Leftover files from crashes or abandoned requests are removed automatically, and never kept longer than about {{ stale }} minutes.</p>
+<h2>Logs and technical data</h2>
+<p>Like most web services, our hosting records technical request logs: your IP address, time, the page requested and the response code. Download session tokens and post links are not written to our access logs, and error logs record only the platform name and error type. Your IP address is also held in server memory for a short time to apply rate limits. Log retention is controlled by the hosting provider.</p>
+<h2>Cookies, accounts and tracking</h2>
+<p>There are no accounts. The site does not set cookies, run advertising or analytics, or use third-party trackers. We never ask for, or use, your Instagram or LinkedIn login. Your browser loads preview thumbnails directly from the platforms' image servers, which can see your IP address when it does.</p>
+<h2>Sharing</h2>
+<p>We do not sell or share your data. It is processed by our hosting provider and, if enabled, our Redis provider, solely to run the service, and may be disclosed if required by law.</p>
+<h2>Your requests</h2>
+<p>Because we keep no profile of you, there is little to retrieve or delete. For any privacy question, see the <a href="/contact">contact page</a>.</p>
+
+{% elif page == 'copyright' %}
+<h2>Copyright and takedown</h2>
+<p>The service does not host or publish anyone's content. It only helps a user save media from a public post that the user chose, and files are deleted after the transfer. We respect intellectual property rights.</p>
+<h2>If you are a rights holder</h2>
+<p>If you believe the service is being used in a way that infringes your rights, or you want requests for your content blocked, write to the <a href="/contact">contact address</a> with: the link to the post, a description of the work, your name and contact details, and a statement that you are the owner or authorised to act for the owner. We will review good-faith requests promptly and may block the affected posts or accounts.</p>
+<p>Removing the original from Instagram or LinkedIn also stops it from being fetched here.</p>
+
+{% elif page == 'contact' %}
+<h2>Get in touch</h2>
+{% if email %}<p>Email: <a href="mailto:{{ email }}">{{ email }}</a>{% if operator %} ({{ operator }}){% endif %}</p>{% else %}<p class="card warn">No contact address has been configured yet.</p>{% endif %}
+<p>Use this address for takedown requests, privacy questions, abuse reports and bug reports. Please include the post link when reporting a problem; do not send passwords or login cookies.</p>
+{% endif %}
+</main></body>
+</html>

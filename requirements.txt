@@ -1,0 +1,7 @@
+flask>=3.0
+yt-dlp>=2026.1.1
+requests>=2.32
+beautifulsoup4>=4.12
+instaloader>=4.14
+gunicorn>=23.0; platform_system != "Windows"
+redis>=5.0
