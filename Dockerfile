@@ -21,6 +21,7 @@ RUN python -m pip install --no-cache-dir -r requirements.txt
 
 COPY app.py limits.py media_sources.py wsgi.py gunicorn.conf.py ./
 COPY templates ./templates
+COPY static ./static
 
 # The application writes only short-lived jobs under the system temp folder.
 # Running as an unprivileged user limits the impact of an application bug.

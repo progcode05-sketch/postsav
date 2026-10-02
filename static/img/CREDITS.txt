@@ -1,0 +1,7 @@
+Feature photos are from Unsplash (https://unsplash.com) and used under the Unsplash License
+(https://unsplash.com/license), which allows free use without attribution. Credit is given anyway.
+
+feature-images.webp  unsplash.com/photos/hands-holding-phone-displaying-social-media-feed-7ljc7nkjNcc
+feature-video.webp   unsplash.com/photos/a-person-working-on-a-laptop-OO_deaXF4CU  (Videodeck .co)
+feature-slides.webp  unsplash.com/photos/person-using-both-laptop-and-smartphone-tLZhFRLj6nY
+feature-zip.webp     unsplash.com/photos/person-using-smartphone-and-laptop-at-the-same-time-QK1OhZmopBo

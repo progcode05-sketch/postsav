@@ -31,6 +31,7 @@ def env_int(name, default):
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 8192
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 7 * 24 * 3600  # self-hosted feature photos are static
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 COOKIE_FILE = os.path.join(BASE_DIR, 'cookies.txt')
 BROWSER = os.environ.get('IG_BROWSER', '').strip().lower()

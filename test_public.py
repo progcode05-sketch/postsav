@@ -256,6 +256,24 @@ class ClientAddressTests(Base):
             self.assertEqual([send('198.51.100.1'), send('198.51.100.2'), send('198.51.100.1')], [200, 200, 429])
 
 
+class StaticImageTests(Base):
+    def test_feature_photos_are_self_hosted_and_served(self):
+        home = self.client.get('/').get_data(as_text=True)
+        names = ('feature-images', 'feature-video', 'feature-slides', 'feature-zip')
+        for name in names:
+            self.assertIn(f'/static/img/{name}.webp', home)
+            response = self.client.get(f'/static/img/{name}.webp')
+            self.assertEqual(response.status_code, 200, name)
+            self.assertEqual(response.mimetype, 'image/webp')
+            self.assertLess(len(response.data), 150 * 1024, name)
+            response.close()
+        self.assertNotIn('images.unsplash.com', home)
+        self.assertTrue((ROOT / 'static' / 'img' / 'CREDITS.txt').exists())
+
+    def test_docker_image_includes_static_folder(self):
+        self.assertIn('COPY static ./static', (ROOT / 'Dockerfile').read_text(encoding='utf-8'))
+
+
 class CleanupTests(Base):
     def test_stale_sweep_removes_only_old_jobs(self):
         os.makedirs(app.DOWNLOAD_DIR, exist_ok=True)
