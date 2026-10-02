@@ -11,6 +11,7 @@ import time
 import sys
 import zipfile
 import logging
+import mimetypes
 import socket
 from urllib.parse import quote, urlsplit, unquote
 
@@ -29,6 +30,7 @@ def env_int(name, default):
         return default
 
 
+mimetypes.add_type('image/webp', '.webp')  # slim Linux images ship without this mapping
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 8192
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 7 * 24 * 3600  # self-hosted feature photos are static

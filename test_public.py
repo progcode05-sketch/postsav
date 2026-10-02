@@ -270,6 +270,11 @@ class StaticImageTests(Base):
         self.assertNotIn('images.unsplash.com', home)
         self.assertTrue((ROOT / 'static' / 'img' / 'CREDITS.txt').exists())
 
+    def test_webp_mimetype_is_registered_explicitly(self):
+        import mimetypes
+        self.assertEqual(mimetypes.guess_type('x.webp')[0], 'image/webp')
+        self.assertIn("mimetypes.add_type('image/webp'", (ROOT / 'app.py').read_text(encoding='utf-8'))
+
     def test_docker_image_includes_static_folder(self):
         self.assertIn('COPY static ./static', (ROOT / 'Dockerfile').read_text(encoding='utf-8'))
 
