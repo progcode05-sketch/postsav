@@ -319,3 +319,19 @@ Verified: 54 offline tests pass (`python -m unittest test_app test_production te
 Known gaps / decisions: limits and gate are per-process (fine for the one-worker design; move to Redis before adding workers). `TRUSTED_PROXY_HOPS` defaults to 1 in public mode; a client can spoof `X-Forwarded-For` only when hitting the container directly with no proxy, so confirm the chosen host's proxy topology. Disk budget is checked when a job starts, not while it grows. Browser still buffers a Blob. Still not tested: sustained concurrent load, mixed photo/video IG carousel, platform access from the chosen datacenter IP.
 
 Still needs the user: choose free host + free Redis (none selected), supply `OPERATOR_NAME` / `CONTACT_EMAIL`, review legal text. Next task: deployment, then re-run `verify_live.py` and the checks above against the hosted URL.
+
+## Update 2026-10-02 (hosting decision: Render free)
+
+Decision: host on **Render free web service + Render free Key Value**, same region (oregon). Contact email: progcode03@gmail.com (set in `render.yaml`; legal pages accepted by the user as-is; `OPERATOR_NAME` left unset/optional). `render.yaml` Blueprint added; `CLIENT_IP_HEADER` setting added because Render is behind Cloudflare (`CF-Connecting-IP` is trusted, `X-Forwarded-For` is spoofable). 57 offline tests pass; Docker image rebuilt and per-client limiting verified with the header. Local git repo initialised on `main` with one commit (nothing pushed; no remote).
+
+Render facts (docs checked 2026-10-02): free web 512 MB / 0.1 CPU, sleeps after 15 idle min (~1 min wake), ephemeral disk, 750 instance-hours/month, 5 GB outbound/month (suspends free services if exhausted and no payment method); free Key Value 25 MB in-memory, 50 connections, one per workspace, data lost on restart; free tier is "not for production".
+
+Remaining (needs the user): push repo to GitHub, create Render account/Blueprint from it, then verify `/readyz`, real downloads from Render's IPs (Instagram/LinkedIn may block datacenter addresses), and memory/CPU under 0.1 CPU; optionally add a free uptime monitor on `/healthz`.
+
+## Update 2026-10-02 (deployed and verified on Render)
+
+Live: https://social-downloader-75g8.onrender.com (GitHub: https://github.com/progcode05-sketch/postsav, public, `main`; Render Blueprint from `render.yaml`, free web + free Key Value, oregon).
+
+Verified against the live URL: `/healthz` 200; `/readyz` ready with `redis: true`, storage ok, ffmpeg present; all four legal pages 200 with contact progcode03@gmail.com. Real downloads from Render's IPs all succeeded: lnkd.in video (10.3 MB), 8-image LinkedIn post (+ZIP), 12-slide LinkedIn document (+ZIP), Instagram reel, single photo, 6-image carousel (+ZIP), 3-video carousel ZIP (3 valid members, ~2 s). So Instagram/LinkedIn did not block Render's datacenter IPs as of this test. Rate limiting works through Cloudflare (11th info request/min got 429; `CLIENT_IP_HEADER=CF-Connecting-IP`), and a second parallel download from the same client got 503 + Retry-After then the slot freed (`active_downloads` back to 0).
+
+Not yet verified: behavior after the free service has slept (cold start ~1 min), long-term platform blocking, sustained multi-user load, mixed photo/video IG carousel, uptime monitor (none created), the 5 GB/month bandwidth cap in practice. A local commit with this note is not pushed (a push triggers an auto-redeploy).
