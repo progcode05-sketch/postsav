@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-02T00:17:09.563752+00:00",
+  "checked_at_utc": "2026-10-02T03:19:51.169859+00:00",
   "results": [
     {
       "label": "LinkedIn short-link video",
@@ -140,6 +140,66 @@
       "warnings": [],
       "status": "PASS",
       "bytes": 2192415
+    },
+    {
+      "label": "Pinterest short-link video (1)",
+      "url": "https://pin.it/1Llt9HRdp",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 843139
+    },
+    {
+      "label": "Pinterest short-link video (2)",
+      "url": "https://pin.it/55aPD5MCW",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 3121887
+    },
+    {
+      "label": "Pinterest short-link video (3)",
+      "url": "https://pin.it/1DdlFsoPF",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 379201
+    },
+    {
+      "label": "Pinterest short-link video (4)",
+      "url": "https://pin.it/1nAsJSkh2",
+      "kinds": [
+        "video"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 5049416
+    },
+    {
+      "label": "Pinterest short-link image",
+      "url": "https://pin.it/49lpVB04J",
+      "kinds": [
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 3752267
+    },
+    {
+      "label": "Pinterest regional slug URL image",
+      "url": "https://in.pinterest.com/pin/landing-page-with-services--11470174047344182/",
+      "kinds": [
+        "image"
+      ],
+      "warnings": [],
+      "status": "PASS",
+      "bytes": 3752267
     }
   ]
 }

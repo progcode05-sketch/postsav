@@ -19,7 +19,7 @@ from flask import Flask, Response, abort, jsonify, render_template, request, str
 from werkzeug.middleware.proxy_fix import ProxyFix
 import requests
 import yt_dlp
-from media_sources import download_to_path, linkedin_post, instagram_post
+from media_sources import PINTEREST_HOST, download_to_path, linkedin_post, instagram_post, pinterest_pin_url, pinterest_post
 from limits import DownloadGate, RateLimiter
 
 
@@ -111,6 +111,12 @@ def clean_url(raw):
             if re.fullmatch(r'/p/[A-Za-z0-9_-]{4,64}/?', path):
                 return resolve_linkedin_short_url(f'https://lnkd.in{path.rstrip("/")}')
             return None
+        if p.hostname in ('pin.it', 'www.pin.it'):
+            if re.fullmatch(r'/[A-Za-z0-9_-]{4,64}/?', path):
+                return resolve_pinterest_short_url(f'https://pin.it{path.rstrip("/")}')
+            return None
+        if PINTEREST_HOST.fullmatch(p.hostname or ''):
+            return pinterest_pin_url(raw.strip())
         if p.hostname in ('instagram.com', 'www.instagram.com', 'm.instagram.com'):
             m = re.fullmatch(r'/(?:[A-Za-z0-9._]+/)?(reel|reels|p|tv)/([A-Za-z0-9_-]+)/?', path)
             if m:
@@ -144,6 +150,34 @@ def resolve_linkedin_short_url(url):
                 if not response.is_redirect or not response.headers.get('Location'):
                     return None
                 from urllib.parse import urljoin
+                current = urljoin(current, response.headers['Location'])
+            finally:
+                response.close()
+    except (requests.RequestException, ValueError):
+        return None
+    return None
+
+
+def resolve_pinterest_short_url(url):
+    """Resolve pin.it share links (pin.it -> api.pinterest.com -> pinterest.com/pin/<id>/sent/...), checking every hop."""
+    from urllib.parse import urljoin
+    current = url
+    headers = {'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-US,en;q=0.9'}
+    try:
+        for _ in range(5):
+            parsed = urlsplit(current)
+            host = (parsed.hostname or '').lower()
+            if parsed.scheme != 'https' or parsed.username or parsed.password or parsed.port not in (None, 443):
+                return None
+            if PINTEREST_HOST.fullmatch(host):
+                # The destination only matters for its pin ID; sender/invite tracking in the URL is dropped.
+                return pinterest_pin_url(current)
+            if host not in ('pin.it', 'www.pin.it', 'api.pinterest.com'):
+                return None
+            response = requests.get(current, headers=headers, timeout=(5, 15), allow_redirects=False, stream=True)
+            try:
+                if not response.is_redirect or not response.headers.get('Location'):
+                    return None
                 current = urljoin(current, response.headers['Location'])
             finally:
                 response.close()
@@ -291,8 +325,14 @@ def new_download_dir():
 def asset_file(post, asset, index, workdir):
     """Stream one server-extracted attachment into a bounded temporary directory."""
     kind = asset['kind']
-    if asset.get('entry'):
-        opts = ydl_opts(dict(outtmpl=os.path.join(workdir, '%(id)s.%(ext)s'), playlist_items=str(asset['entry']), noplaylist=False))
+    if asset.get('entry') or asset.get('ytdlp'):
+        extra = dict(outtmpl=os.path.join(workdir, '%(id)s.%(ext)s'))
+        if asset.get('entry'):
+            extra.update(playlist_items=str(asset['entry']), noplaylist=False)
+        if asset.get('ytdlp'):
+            # Pinterest streams video and audio as separate HLS tracks; ffmpeg muxes them into one MP4.
+            extra['format'] = 'bv*+ba/b' if HAS_FFMPEG else 'b'
+        opts = ydl_opts(extra)
         with yt_dlp.YoutubeDL(opts) as ydl:
             ydl.extract_info(post['url'], download=True)
         files = [os.path.join(workdir, f) for f in os.listdir(workdir) if f.endswith(('.mp4', '.webm', '.mkv'))]
@@ -305,7 +345,15 @@ def asset_file(post, asset, index, workdir):
         mime = 'video/mp4' if ext == '.mp4' else 'video/webm' if ext == '.webm' else 'video/x-matroska'
     else:
         path = os.path.join(workdir, f'asset_{index:03d}.download')
-        _, mime = download_to_path(asset['source'], post['platform'], path, MAX_FILE)
+        sources = [asset['source'], *asset.get('fallbacks', [])]
+        for attempt, source in enumerate(sources):
+            try:
+                _, mime = download_to_path(source, post['platform'], path, MAX_FILE)
+                break
+            except requests.HTTPError:
+                # Only a missing/forbidden original falls back to the reduced-size copy (Pinterest images).
+                if attempt == len(sources) - 1:
+                    raise
         extensions = {'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'video/mp4': '.mp4', 'application/pdf': '.pdf'}
         ext = extensions.get(mime)
         if not ext or not mime.startswith({'image': 'image/', 'video': 'video/', 'document': 'application/pdf'}[kind]):
@@ -406,9 +454,15 @@ def info():
         return jsonify(error='Please confirm that you own this content or have permission to download it.'), 400
     url = clean_url(payload.get('url') if isinstance(payload, dict) else None)
     if not url:
-        return jsonify(error='Paste an Instagram reel/post URL or a LinkedIn post URL.'), 400
+        return jsonify(error='Paste an Instagram reel/post, LinkedIn post or Pinterest pin URL.'), 400
     try:
-        post = linkedin_post(url) if 'linkedin.com' in urlsplit(url).hostname else instagram_post(url, ydl_opts)
+        host = urlsplit(url).hostname
+        if 'linkedin.com' in host:
+            post = linkedin_post(url)
+        elif host == 'www.pinterest.com':
+            post = pinterest_post(url)
+        else:
+            post = instagram_post(url, ydl_opts)
         if not post['assets']:
             raise ValueError('No downloadable attachments were found in this post.')
         if len(post['assets']) > 100:

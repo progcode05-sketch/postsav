@@ -35,6 +35,10 @@ Exact URLs and machine-readable outcomes are in [live-test-results.json](live-te
 
 37 individual attachments downloaded and validated. All five multi-attachment ZIPs passed entry-count, CRC and member-file checks. Pillow verified image integrity; MP4 checks verified container signatures and media/metadata atoms. This is not a complete playback/decode or audio-quality test.
 
+## Pinterest (2026-10-02)
+
+Offline: `test_pinterest.py` covers URL normalization and lookalike rejection, `pin.it` hop-by-hop resolution (unsafe redirects, loops, outages), extraction from fixtures (video MP4, HLS-to-MP4 recovery by video ID, yt-dlp fallback, untrusted hosts, image originals with reduced fallbacks, multi-image pins, malformed JSON-LD, entities, HTTP error mapping) and download behaviour (fallback only on 404/403, size-limit errors do not fall back, cleanup, ZIP order, yt-dlp options). Live: all five supplied `pin.it` links (four videos, one image) downloaded and validated, plus a regional slug URL; `python verify_live.py Pinterest` runs just these. The yt-dlp fallback was run for real inside the Docker image (ffmpeg present) and produced an H.264 + AAC MP4.
+
 ## Environment and UI
 
 Fifty-four offline tests pass (`test_app`, `test_production`, `test_public`). Python compilation passes. Tests also run in the `.venv` created by the actual Windows batch launcher; `pip check` reports no broken project requirements. The batch launcher successfully starts the site and opens the browser. The Mac/Linux script was reviewed but cannot be executed as a native launcher on this Windows machine.

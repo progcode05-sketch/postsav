@@ -1,10 +1,10 @@
-# Social Downloader — Instagram & LinkedIn
+# Social Downloader — Instagram, LinkedIn & Pinterest
 
 A local Flask website for downloading available post attachments. Start it with `start-windows.bat` or `start-mac-linux.sh`. The launcher installs dependencies automatically and opens the browser after the server responds; Python 3.10+ is required. Optional ffmpeg enables merging separate video/audio streams.
 
 ## Use
 
-1. Paste an Instagram reel/post URL or a LinkedIn post URL.
+1. Paste an Instagram reel/post URL, a LinkedIn post URL or a Pinterest pin URL (`pin.it` and `lnkd.in` share links work too).
 2. Check the attachment previews.
 3. Download an individual image/video, or choose **Download all · ZIP** for multiple attachments.
 
@@ -12,7 +12,9 @@ LinkedIn document carousels are offered as numbered slide images. A PDF option a
 
 Instagram reels use yt-dlp; photo and mixed carousel posts use Instaloader. Some posts require a login session or are blocked by the platform. External article previews, text-only posts, LinkedIn Learning and live events are not supported. LinkedIn `lnkd.in/p/...` post short links and full post URLs both work. LinkedIn support currently reads the public post view; personal LinkedIn login cookies are not used.
 
-Accepted LinkedIn links: `https://www.linkedin.com/posts/...-activity-1234-abcd`, `https://www.linkedin.com/feed/update/urn:li:activity:1234/` (also share/ugcPost URNs), and LinkedIn post share links such as `https://lnkd.in/p/AbCd1234`. Short links are safely resolved to their full LinkedIn post URL and tracking parameters are removed.
+Accepted LinkedIn links (Instagram and Pinterest links are described in their own paragraphs): `https://www.linkedin.com/posts/...-activity-1234-abcd`, `https://www.linkedin.com/feed/update/urn:li:activity:1234/` (also share/ugcPost URNs), and LinkedIn post share links such as `https://lnkd.in/p/AbCd1234`. Short links are safely resolved to their full LinkedIn post URL and tracking parameters are removed.
+
+Pinterest pins are read from the public pin page's structured data (`schema.org` JSON-LD), so no login or API key is needed. Image pins download the original-size file from `i.pinimg.com` (falling back to the 736 px copy only if the original is unavailable); video pins download the pin's own MP4 from `v1.pinimg.com`, including audio. If a page lists only a streaming playlist, the MP4 is taken from the same page by the video's own ID, and as a last resort yt-dlp assembles it (needs ffmpeg). Accepted links: `https://www.pinterest.com/pin/<id>/`, regional hosts (`in.pinterest.com`, `pinterest.co.uk`, ...), slug forms such as `/pin/some-title--<id>/`, and `https://pin.it/<code>` share links. Share links are followed hop by hop (`pin.it` → `api.pinterest.com` → the pin), and the `sender`/`invite_code` details in the final URL are discarded. Only the pin ID is used: the page is always fetched from `www.pinterest.com` and media only from `pinimg.com`. Boards, profiles and search pages are not supported, and a few pins that Pinterest hides from signed-out visitors return a clear error.
 
 Download sessions expire after 15 minutes or a server restart. Fetch the post again to refresh. Individual files are capped at 250 MB, ZIP bundles at 500 MB, and posts at 100 attachments. Media is streamed into a per-request temporary directory and streamed back to the browser in 64 KB chunks; completed, failed, and disconnected transfers clean up their directory, with a one-hour stale-job sweep as a restart fallback. The ZIP preserves post/slide order using numbered filenames. These are available platform renditions, not a guarantee of original upload quality.
 

@@ -30,7 +30,15 @@ The [Richard van der Blom document sample](https://www.linkedin.com/posts/richar
 
 [Instaloader's Python interface](https://instaloader.github.io/as-module.html) provides post metadata and carousel nodes. It complements yt-dlp, which focuses on video. Photo/mixed-carousel extraction uses those nodes and imports optional local Instagram cookies. Reel extraction keeps its established yt-dlp path and reuses an extracted combined MP4 URL when possible. The audit successfully downloaded a NASA photo, all six images of an azcentral carousel and all three videos of an Instagram carousel, individually and in ZIPs. Mixed image/video handling has fixture coverage but still needs a real mixed-post example. See `docs/TESTING.md` for URLs and verification limits.
 
-## Hosting implications and practical limits
+## Pinterest (added 2026-10-02)
+
+Findings from the five links supplied for this feature: `pin.it/<code>` returns 308 to `api.pinterest.com/url_shortener/<code>/redirect/`, which returns 302 to `www.pinterest.com/pin/<id>/sent/?invite_code=...&sender=...&sfo=1` (the sender and invite code identify a person and are dropped). Pin pages are ~1.2 MB and carry `SocialMediaPosting` (headline, author, original-size `image` on `i.pinimg.com/originals/`) and, for video pins, `VideoObject` (`contentUrl`, `thumbnailUrl`) JSON-LD at the very end of the document. Four of the five pins were videos (direct H.264 + AAC MP4s, 720 px wide) and one was an image (3.7 MB original PNG). Canonical/`og:url` links of repinned pins point at a different (original) pin ID, so no identity check is made on them; the fetch is by the requested ID.
+
+Page variants differ between requests (sizes 1.26-1.49 MB). In sampling, about 1 in 12 responses listed an HLS playlist (`.../hls/....m3u8`) as the `VideoObject.contentUrl` instead of the MP4; the same page still contains the MP4 URL, keyed by the same 32-character video ID, so the extractor recovers it from there and only uses yt-dlp (separate HLS video/audio muxed by ffmpeg, format `bv*+ba/b`) if no MP4 is present. The original pin ID of a repinned image (`/pin/396739048447882369/`) returned an empty page shell to signed-out clients, and Pinterest's `PinResource` JSON endpoint answered 403, so neither is used. yt-dlp's Pinterest extractor handles video pins but reports "No video formats found" for image pins, which is why structured data is the primary source.
+
+Security boundaries: input hosts are matched against Pinterest's regional domain pattern only to read the pin ID; requests go to `www.pinterest.com` (page) and `pinimg.com` (media) with every redirect revalidated, https only, no credentials, standard port.
+
+## 
 
 `media_sources.py` owns extraction and trusted media fetching; Flask owns presentation and expiring session tokens. Client requests specify a session and attachment ID rather than arbitrary media URLs. CDN fetching validates HTTPS and hostnames on every redirect, bounds response size, uses timeouts and checks returned media MIME types. This reduces arbitrary URL proxy exposure; it is not a substitute for full production egress controls or abuse limits. Instagram's yt-dlp network path has its own upstream redirect handling.
 

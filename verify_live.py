@@ -1,4 +1,8 @@
-"""Opt-in real network checks. Fails on bad extraction, wrong counts or invalid files."""
+"""Opt-in real network checks. Fails on bad extraction, wrong counts or invalid files.
+
+Usage: python verify_live.py [name-filter]. A filter (for example "Pinterest") runs only matching samples and does
+not overwrite docs/live-test-results.json.
+"""
 import io
 import json
 import sys
@@ -19,6 +23,12 @@ SAMPLES = [
     ('Instagram photo', 'https://www.instagram.com/p/BwFQEn0j7v1/', ['image']),
     ('Instagram video carousel', 'https://www.instagram.com/p/BQ0eAlwhDrw/', ['video'] * 3),
     ('Instagram image carousel', 'https://www.instagram.com/p/DJS2jZXptzr/', None),
+    ('Pinterest short-link video (1)', 'https://pin.it/1Llt9HRdp', ['video']),
+    ('Pinterest short-link video (2)', 'https://pin.it/55aPD5MCW', ['video']),
+    ('Pinterest short-link video (3)', 'https://pin.it/1DdlFsoPF', ['video']),
+    ('Pinterest short-link video (4)', 'https://pin.it/1nAsJSkh2', ['video']),
+    ('Pinterest short-link image', 'https://pin.it/49lpVB04J', ['image']),
+    ('Pinterest regional slug URL image', 'https://in.pinterest.com/pin/landing-page-with-services--11470174047344182/', ['image']),
 ]
 
 
@@ -34,9 +44,11 @@ def check_file(body, name):
         raise AssertionError(f'Unexpected output format: {name}')
 
 
-def run():
+def run(name_filter=''):
     client, results = app.app.test_client(), []
     for label, url, expected in SAMPLES:
+        if name_filter.lower() not in label.lower():
+            continue
         result = dict(label=label, url=url)
         try:
             r = client.post('/api/info', json={'url': url})
@@ -73,9 +85,10 @@ def run():
         results.append(result)
         print(json.dumps(result, ensure_ascii=True), flush=True)
     report = dict(checked_at_utc=datetime.now(timezone.utc).isoformat(), results=results)
-    Path('docs/live-test-results.json').write_text(json.dumps(report, indent=2, ensure_ascii=True), encoding='utf-8')
+    if not name_filter:
+        Path('docs/live-test-results.json').write_text(json.dumps(report, indent=2, ensure_ascii=True), encoding='utf-8')
     return 1 if any(r['status'] != 'PASS' for r in results) else 0
 
 
 if __name__ == '__main__':
-    sys.exit(run())
+    sys.exit(run(sys.argv[1] if len(sys.argv) > 1 else ''))

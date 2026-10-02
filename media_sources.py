@@ -1,4 +1,5 @@
 """Platform extraction, independent of Flask and download-session storage."""
+import html
 import json
 import os
 import re
@@ -8,6 +9,10 @@ import requests
 from bs4 import BeautifulSoup
 
 MAX_FETCH = 12 * 1024 * 1024
+# Pinterest serves pins from regional hosts (in., uk., pinterest.co.uk, ...). Only the pin ID is taken from a
+# user-supplied host; the page itself is always requested from www.pinterest.com.
+PINTEREST_HOST = re.compile(r'(?:(?:www|[a-z]{2})\.)?pinterest\.(?:com|co\.[a-z]{2}|com\.[a-z]{2}|[a-z]{2})')
+PINTEREST_PIN_PATH = re.compile(r'/pin/(?:[^/\s]{0,200}--)?(\d{5,25})/?(?:sent/?)?')
 HEADERS = {'User-Agent': 'Mozilla/5.0', 'Accept-Language': 'en-US,en;q=0.9'}
 
 
@@ -21,8 +26,28 @@ def allowed_url(url, platform, page=False):
     except ValueError:
         return False
     host = (p.hostname or '').lower()
-    domains = ('linkedin.com',) if page else (('licdn.com',) if platform == 'linkedin' else ('cdninstagram.com', 'fbcdn.net'))
+    if page and platform == 'pinterest':
+        return bool(PINTEREST_HOST.fullmatch(host))
+    if page:
+        domains = ('linkedin.com',)
+    else:
+        domains = {'linkedin': ('licdn.com',), 'pinterest': ('pinimg.com',)}.get(platform, ('cdninstagram.com', 'fbcdn.net'))
     return any(host == d or host.endswith('.' + d) for d in domains)
+
+
+def pinterest_pin_url(url):
+    """Normalize any Pinterest pin URL to https://www.pinterest.com/pin/<id>/, dropping share/tracking parts."""
+    from urllib.parse import unquote
+    try:
+        p = urlsplit(url)
+        if p.scheme not in ('http', 'https') or p.username or p.password or p.port not in (None, 80, 443):
+            return None
+        if not PINTEREST_HOST.fullmatch((p.hostname or '').lower()):
+            return None
+        match = PINTEREST_PIN_PATH.fullmatch(unquote(p.path))
+    except ValueError:
+        return None
+    return f'https://www.pinterest.com/pin/{match[1]}/' if match else None
 
 
 def fetch(url, platform, limit=MAX_FETCH, page=False):
@@ -215,3 +240,98 @@ def instagram_post(url, ydl_opts):
             raise ValueError('Instagram did not expose media for this post. Try a public post. When running locally, Instagram cookie setup is described in the README.')
         warnings.append('Only videos could be extracted. Any photo attachments in this post may be missing; Instagram may require a login session.')
     return dict(platform='instagram', url=url, title=(data.get('description') or data.get('title') or 'Instagram post')[:140], uploader=data.get('uploader') or '', assets=assets, warnings=warnings)
+
+
+def _meta_content(head, prop):
+    """Read one <meta property=...> value from the start of a page without a full HTML parse."""
+    for tag in re.finditer(rb'<meta\b[^>]*>', head):
+        text = tag[0].decode('utf-8', 'replace')
+        if re.search(r'(?:property|name)\s*=\s*"' + re.escape(prop) + '"', text):
+            value = re.search(r'content\s*=\s*"([^"]*)"', text)
+            return html.unescape(value[1]) if value else ''
+    return ''
+
+
+def _json_ld(raw):
+    for block in re.finditer(rb'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', raw, re.S):
+        try:
+            record = json.loads(block[1].decode('utf-8', 'replace'))
+        except ValueError:
+            continue
+        yield from (record if isinstance(record, list) else [record])
+
+
+def _pinterest_mp4_from_page(raw, video):
+    """Pinterest sometimes lists an HLS playlist as contentUrl; the same video's MP4 is elsewhere in the page."""
+    video_id = None
+    for key in ('contentUrl', 'thumbnailUrl'):
+        match = re.search(r'/([0-9a-f]{32})[._]', str(video.get(key) or ''))
+        if match:
+            video_id = match[1]
+            break
+    if not video_id:
+        return None
+    pattern = re.compile(rb'https://v1\.pinimg\.com/videos/iht/expMp4/(?:[0-9a-f]{2}/){3}' + video_id.encode() + rb'_(\d{3,4})w\.mp4')
+    found = {int(match[1]): match[0].decode() for match in pattern.finditer(raw)}
+    return found[max(found)] if found else None
+
+
+def pinterest_post(url):
+    """Extract the original image or video from a public Pinterest pin via its schema.org markup."""
+    try:
+        raw, _ = fetch(url, 'pinterest', page=True)
+    except requests.HTTPError as err:
+        status = err.response.status_code if err.response is not None else 0
+        if status in (404, 410):
+            raise ValueError('Pinterest could not find this pin. It may be private, removed, or limited to signed-in users.') from err
+        if status in (401, 403, 429):
+            raise ValueError('Pinterest is limiting requests right now. Please try again later.') from err
+        raise
+    records = [r for r in _json_ld(raw) if isinstance(r, dict)]
+    posting = next((r for r in records if r.get('@type') == 'SocialMediaPosting'), {})
+    video = next((r for r in records if r.get('@type') == 'VideoObject'), None)
+    head = raw[:400000]
+    og_title = _meta_content(head, 'og:title')
+    og_image = _meta_content(head, 'og:image')
+    author = posting.get('author') or (video or {}).get('creator') or {}
+    uploader = author.get('name', '') if isinstance(author, dict) else ''
+    # Pinterest titles often carry a ' | keyword | keyword' tail; keep just the title itself.
+    title = (posting.get('headline') or og_title).split(' | ')[0]
+    title = re.sub(r'\s*\[Video\]\s*$', '', title).strip() or 'Pinterest pin'
+    assets, warnings = [], []
+
+    def add(kind, source, thumb=None, label=None, **extra):
+        if allowed_url(source, 'pinterest') and not any(a['source'] == source for a in assets):
+            thumbnail = thumb if allowed_url(thumb, 'pinterest') else (source if kind == 'image' else None)
+            assets.append(dict(kind=kind, source=source, thumbnail=thumbnail, label=label, **extra))
+
+    def reduced(source):
+        # Same picture at 736px wide: used only if the original-size file turns out to be unavailable.
+        match = re.match(r'(https://[a-z0-9.]*pinimg\.com)/originals/(.+)\.[A-Za-z0-9]+$', source or '')
+        return [f'{match[1]}/736x/{match[2]}.jpg'] if match else []
+
+    if video:
+        direct = video.get('contentUrl')
+        is_mp4 = lambda value: isinstance(value, str) and allowed_url(value, 'pinterest') and urlsplit(value).path.lower().endswith('.mp4')
+        mp4 = direct if is_mp4(direct) else _pinterest_mp4_from_page(raw, video)
+        if mp4:
+            add('video', mp4, video.get('thumbnailUrl'), 'Video')
+        else:
+            # No plain MP4 anywhere in the page (for example only a streaming playlist): let yt-dlp assemble it.
+            thumb = video.get('thumbnailUrl')
+            assets.append(dict(kind='video', source=url, ytdlp=True, thumbnail=thumb if allowed_url(thumb, 'pinterest') else None, label='Video'))
+    else:
+        images = posting.get('image') or []
+        images = images if isinstance(images, list) else [images]
+        for image in images:
+            source = image.get('url') if isinstance(image, dict) else image
+            if isinstance(source, str):
+                fallbacks = [og_image] if len(images) == 1 and allowed_url(og_image, 'pinterest') else reduced(source)
+                # Previews use the light 736 px copy; the download is the original.
+                add('image', source, thumb=fallbacks[0] if fallbacks else None, label=f'Image {len(assets) + 1}', fallbacks=fallbacks)
+        if not assets and allowed_url(og_image, 'pinterest'):
+            add('image', og_image, label='Image 1')
+            warnings.append('Pinterest did not expose the full-size original, so a reduced-size image is offered.')
+    if not assets:
+        raise ValueError('No downloadable image or video was exposed for this pin. It may be private, removed, or not shown to logged-out visitors. Try the Share link (pin.it) from the pin instead.')
+    return dict(platform='pinterest', url=url, title=title[:140], uploader=uploader or 'Pinterest pin', assets=assets, warnings=warnings)

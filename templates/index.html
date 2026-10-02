@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Download available images, videos and carousel slides from Instagram and LinkedIn posts.">
+<meta name="description" content="Download available images, videos and carousel slides from Instagram, LinkedIn and Pinterest posts.">
 <meta name="theme-color" content="#f4f8ff">
-<title>Social Downloader · Instagram & LinkedIn</title>
+<title>Social Downloader · Instagram, LinkedIn & Pinterest</title>
 {% include '_styles.html' %}
 <style>
 .hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center;padding:72px 0 24px}
@@ -31,9 +31,9 @@ form#f.busy .btn::before{content:"";width:14px;height:14px;border-radius:50%;bor
 .vcard{position:absolute;display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);border-radius:20px;box-shadow:0 18px 40px -16px rgba(32,64,160,.35);animation:float 7s ease-in-out infinite}
 .vcard b{display:block;font-size:14px;letter-spacing:-.01em}.vcard small{display:block;color:var(--muted);font-size:12px}
 .vcard .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex:none}
-.ic.ig{background:linear-gradient(135deg,#f9a03f,#e1306c 55%,#7b3fe4)}.ic.li{background:#0a66c2}.ic.zip{background:linear-gradient(135deg,#6a8dff,#2f6bff)}
+.ic.pin{background:#e60023}.ic.ig{background:linear-gradient(135deg,#f9a03f,#e1306c 55%,#7b3fe4)}.ic.li{background:#0a66c2}.ic.zip{background:linear-gradient(135deg,#6a8dff,#2f6bff)}
 .chk{margin-left:8px;width:22px;height:22px;border-radius:50%;background:rgba(26,168,107,.14);color:var(--ok);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;flex:none}
-.v1{top:6%;left:0;animation-delay:0s}.v2{top:36%;right:0;width:300px;flex-direction:column;align-items:stretch;gap:10px;animation-delay:-2.2s}.v3{bottom:5%;left:8%;animation-delay:-4.4s}
+.v1{top:6%;left:0;animation-delay:0s}.v2{top:36%;right:0;width:300px;flex-direction:column;align-items:stretch;gap:10px;animation-delay:-2.2s}.v3{bottom:6%;left:3%;animation-delay:-4.4s}.v4{bottom:3%;right:0;padding:12px 14px;animation-delay:-1.1s}
 .slides{display:flex;gap:6px}.slides i{flex:1;aspect-ratio:1;border-radius:8px;background:linear-gradient(135deg,#dbe7ff,#b9ceff)}.slides i:nth-child(2n){background:linear-gradient(135deg,#e8efff,#c8d8ff)}
 .bar{height:6px;border-radius:99px;background:var(--soft);overflow:hidden}.bar::after{content:"";display:block;width:78%;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
 @keyframes float{50%{transform:translateY(-10px)}}
@@ -83,19 +83,20 @@ code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
 <main class="wrap" id="top">
 <section class="hero">
  <div>
-  <span class="eyebrow"><i></i>Instagram + LinkedIn · free beta</span>
+  <span class="eyebrow"><i></i>Instagram + LinkedIn + Pinterest · free beta</span>
   <h1><span class="soft">Your favorite posts.</span><br><span class="hi">Ready to save.</span></h1>
-  <p class="sub">Paste a post link and download its images, videos and carousel slides. Grab files one by one, or take everything in a single ZIP.</p>
+  <p class="sub">Paste a post or pin link and download its images, videos and carousel slides from Instagram, LinkedIn or Pinterest. Grab files one by one, or take everything in a single ZIP.</p>
   {% if public_mode %}<label class="ack"><input type="checkbox" id="ack"><span>I own this content or have permission to download it, and I accept the <a href="/terms" target="_blank" rel="noopener">Terms</a>.</span></label>{% endif %}
-  <form id="f"><input id="url" type="url" aria-label="Instagram or LinkedIn post URL" placeholder="Paste an Instagram, LinkedIn, or lnkd.in post URL" autocomplete="off" required><button class="btn" id="go">Fetch media</button></form>
+  <form id="f"><input id="url" type="url" aria-label="Instagram, LinkedIn or Pinterest post URL" placeholder="Paste an Instagram, LinkedIn or Pinterest link" autocomplete="off" required><button class="btn" id="go">Fetch media</button></form>
   <div id="msg" role="status" aria-live="polite"></div>
-  <div class="chips"><span class="chip"><i class="dot" style="background:#2f6bff"></i>Images</span><span class="chip"><i class="dot" style="background:#e1306c"></i>Videos</span><span class="chip"><i class="dot" style="background:#0a66c2"></i>Carousel slides</span><span class="chip"><i class="dot" style="background:#1aa86b"></i>ZIP bundle</span></div>
+  <div class="chips"><span class="chip"><i class="dot" style="background:#2f6bff"></i>Images</span><span class="chip"><i class="dot" style="background:#e1306c"></i>Videos</span><span class="chip"><i class="dot" style="background:#0a66c2"></i>Carousel slides</span><span class="chip"><i class="dot" style="background:#e60023"></i>Pinterest pins</span><span class="chip"><i class="dot" style="background:#1aa86b"></i>ZIP bundle</span></div>
  </div>
  <div class="visual" aria-hidden="true">
   <div class="orb"></div>
   <div class="vcard v1"><span class="ic ig">IG</span><div><b>Instagram reel</b><small>Video · ready to save</small></div><i class="chk">✓</i></div>
   <div class="vcard v2"><div style="display:flex;gap:12px;align-items:center"><span class="ic li">in</span><div><b>LinkedIn carousel</b><small>Slides · fetching…</small></div></div><div class="slides"><i></i><i></i><i></i><i></i><i></i></div><div class="bar"></div></div>
-  <div class="vcard v3"><span class="ic zip">ZIP</span><div><b>Download all</b><small>Ordered, one file</small></div><i class="chk">✓</i></div>
+  <div class="vcard v3"><span class="ic pin">P</span><div><b>Pinterest pin</b><small>Original size · ready</small></div><i class="chk">✓</i></div>
+  <div class="vcard v4"><span class="ic zip">ZIP</span><div><b>Download all</b><small>One ordered file</small></div></div>
  </div>
 </section>
 
@@ -104,7 +105,7 @@ code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
 <section class="block" id="how">
  <div class="head"><div class="kicker">How it works</div><h2>Three steps. No sign-up.</h2><p class="lead">No accounts and no extensions. Everything happens in your browser tab.</p></div>
  <div class="steps">
-  <div class="step"><div class="n">1</div><h3>Paste the link</h3><p>Copy the post URL from Instagram or LinkedIn, including <code>lnkd.in</code> share links, and paste it above.</p></div>
+  <div class="step"><div class="n">1</div><h3>Paste the link</h3><p>Copy the post or pin URL from Instagram, LinkedIn or Pinterest, including <code>lnkd.in</code> and <code>pin.it</code> share links, and paste it above.</p></div>
   <div class="step"><div class="n">2</div><h3>Preview what's available</h3><p>We show every image, video or slide the platform makes publicly available for that post.</p></div>
   <div class="step"><div class="n">3</div><h3>Save it</h3><p>Download a single file, or take the whole post as an ordered ZIP. Temporary files are removed afterwards.</p></div>
  </div>
@@ -113,13 +114,13 @@ code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
 <section class="block" id="features">
  <div class="head"><div class="kicker">What you can save</div><h2>Built for the posts you actually share</h2></div>
  <div class="feats">
-  <div class="feat"><div class="art"><img src="/static/img/feature-images.webp" alt="Hands holding a phone showing an Instagram feed" width="720" height="1080" loading="lazy" style="object-position:50% 38%"><span class="tag">JPG · PNG · WebP</span></div><div class="txt"><h3>Images and photo carousels</h3><p>Single photos and multi-image posts from both platforms, in the best quality exposed.</p></div></div>
-  <div class="feat"><div class="art"><img src="/static/img/feature-video.webp" alt="A presenter being filmed with a cinema camera in a studio" width="720" height="484" loading="lazy" style="object-position:50% 50%"><span class="tag">MP4</span></div><div class="txt"><h3>Videos and reels</h3><p>Instagram reels and LinkedIn videos as standard MP4 files.</p></div></div>
+  <div class="feat"><div class="art"><img src="/static/img/feature-images.webp" alt="Hands holding a phone showing an Instagram feed" width="720" height="1080" loading="lazy" style="object-position:50% 38%"><span class="tag">JPG · PNG · WebP</span></div><div class="txt"><h3>Images and photo carousels</h3><p>Single photos and multi-image posts from Instagram and LinkedIn, plus full-size Pinterest pin images.</p></div></div>
+  <div class="feat"><div class="art"><img src="/static/img/feature-video.webp" alt="A presenter being filmed with a cinema camera in a studio" width="720" height="484" loading="lazy" style="object-position:50% 50%"><span class="tag">MP4</span></div><div class="txt"><h3>Videos and reels</h3><p>Instagram reels, LinkedIn videos and Pinterest video pins as standard MP4 files.</p></div></div>
   <div class="feat"><div class="art"><img src="/static/img/feature-slides.webp" alt="A laptop showing a LinkedIn profile next to a phone" width="720" height="480" loading="lazy" style="object-position:50% 45%"><span class="tag">Slide by slide</span></div><div class="txt"><h3>LinkedIn document slides</h3><p>Carousel documents saved slide by slide as images, kept in their original order.</p></div></div>
   <div class="feat"><div class="art"><img src="/static/img/feature-zip.webp" alt="A person using a laptop and a phone together" width="720" height="480" loading="lazy" style="object-position:50% 40%"><span class="tag">bundle.zip</span></div><div class="txt"><h3>One-click ZIP</h3><p>Everything in a post in a single download, named and ordered so it is easy to sort.</p></div></div>
  </div>
  <div class="trust">
-  <div><b>Instagram + LinkedIn</b><span>Posts, reels, carousels</span></div>
+  <div><b>Three platforms</b><span>Instagram, LinkedIn, Pinterest</span></div>
   <div><b>No sign-up</b><span>No account or login needed</span></div>
   <div><b>Not stored</b><span>Files deleted when done</span></div>
   <div><b>Free beta</b><span>No ads, no trackers</span></div>
@@ -129,13 +130,14 @@ code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
 <section class="block faq" id="faq">
  <div class="head"><div class="kicker">FAQ</div><h2>Good to know</h2></div>
  <details><summary>Why can't I fetch some posts?</summary><p>Only publicly available media can be fetched. Private accounts, sign-in-only posts and anything the platform blocks may be unavailable, and platforms change over time.</p></details>
+ <details><summary>Which Pinterest links work?</summary><p>Pin links (<code>pinterest.com/pin/…</code>, including regional versions) and <code>pin.it</code> share links. Boards and profiles are not supported, and a few pins that Pinterest hides from signed-out visitors cannot be fetched.</p></details>
  <details><summary>Do you keep my files or links?</summary><p>No. Post details are held for 15 minutes so your download links work, and files are written temporarily while being prepared and then deleted. See the <a href="/privacy">privacy policy</a>.</p></details>
  <details><summary>Is it free? Are there limits?</summary><p>It is a free beta. To keep it fast for everyone there are request limits, up to 250 MB per file, and 500 MB per ZIP.</p></details>
  <details><summary>Can I download anyone's content?</summary><p>Only save content you own or have permission to use. See the <a href="/terms">terms</a> and the <a href="/copyright">copyright and takedown</a> page.</p></details>
 </section>
 </main>
 <footer class="site"><div class="wrap cols">
- <div><p><strong style="color:var(--ink)">Social Downloader</strong></p><p>Publicly accessible posts work best. Availability depends on the platform; private or sign-in-only media may be unavailable.</p>{% if public_mode %}<p>Download only content you own or have permission to use. We do not store posts or files. Not affiliated with Instagram or LinkedIn. Photos from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>.</p>{% else %}<p>Runs locally on your computer. Download only content you own or have permission to use.</p>{% endif %}</div>
+ <div><p><strong style="color:var(--ink)">Social Downloader</strong></p><p>Publicly accessible posts work best. Availability depends on the platform; private or sign-in-only media may be unavailable.</p>{% if public_mode %}<p>Download only content you own or have permission to use. We do not store posts or files. Not affiliated with Instagram, LinkedIn or Pinterest. Photos from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>.</p>{% else %}<p>Runs locally on your computer. Download only content you own or have permission to use.</p>{% endif %}</div>
  <nav aria-label="Legal"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/copyright">Copyright &amp; takedown</a><a href="/contact">Contact</a></nav>
 </div></footer>
 <script>
@@ -172,7 +174,7 @@ $('f').addEventListener('submit',async e=>{
  try{
   const res=await fetch('/api/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:enteredURL,ack:PUBLIC_MODE?$('ack').checked:undefined}),signal:controller.signal});
   const data=await readJSON(res);if(mine!==generation)return;if(!res.ok)throw new Error(data.error||'Could not fetch this post.');
-  current=data;$('who').textContent=(data.platform==='linkedin'?'LinkedIn':'Instagram')+(data.uploader?' · '+data.uploader:'');$('caption').textContent=data.title;
+  current=data;$('who').textContent=({linkedin:'LinkedIn',pinterest:'Pinterest'}[data.platform]||'Instagram')+(data.uploader?' · '+data.uploader:'');$('caption').textContent=data.title;
   $('warnings').textContent=(data.warnings||[]).join(' ');$('assets').replaceChildren();
   for(const asset of data.assets){
    const card=document.createElement('article');card.className='asset';
