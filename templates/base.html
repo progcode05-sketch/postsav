@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.title }}</title>
+<meta name="description" content="{{ page.description }}">
+{% if noindex %}<meta name="robots" content="noindex, follow">
+{% else %}<link rel="canonical" href="{{ canonical }}">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{ site.name }}">
+<meta property="og:locale" content="en_US">
+<meta property="og:title" content="{{ page.title }}">
+<meta property="og:description" content="{{ page.description }}">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:image" content="{{ og_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ site.name }}: free Instagram, LinkedIn and Pinterest post downloader">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ page.title }}">
+<meta name="twitter:description" content="{{ page.description }}">
+<meta name="twitter:image" content="{{ og_image }}">
+{% endif %}<meta name="theme-color" content="#f4f8ff">
+{% if site.google_verification %}<meta name="google-site-verification" content="{{ site.google_verification }}">
+{% endif %}{% if site.bing_verification %}<meta name="msvalidate.01" content="{{ site.bing_verification }}">
+{% endif %}<link rel="icon" href="/favicon.ico" sizes="48x48">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="manifest" href="/site.webmanifest">
+<link rel="stylesheet" href="{{ asset('site.css') }}">
+{% if jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>
+{% endif %}</head>
+<body data-public="{{ 'true' if is_public else 'false' }}">
+<a class="skip" href="#main">Skip to content</a>
+{% set cta = '#tool' if page.tool else '/#tool' %}
+<header class="nav"><div class="nav-in">
+ <a class="brand" href="/" aria-label="{{ site.name }} home"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="10" fill="url(#g)"/><path d="M16 8v11m0 0-4.5-4.5M16 19l4.5-4.5M9.5 23h13" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g" x1="4" y1="2" x2="28" y2="30"><stop stop-color="#6a95ff"/><stop offset="1" stop-color="#2f5bf0"/></linearGradient></defs></svg>{{ site.name }}</a>
+ <nav class="nav-links" aria-label="Main">{% for label, path in site.nav %}<a href="{{ path }}"{% if path == page.path %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}<a class="pill" href="{{ cta }}">Paste a link</a></nav>
+ <details class="menu"><summary>Menu</summary><div class="menu-panel">{% for label, path in site.nav %}<a href="{{ path }}">{{ label }}</a>{% endfor %}<a class="cta" href="{{ cta }}">Paste a link</a></div></details>
+</div></header>
+<main id="main" class="wrap{% block main_class %}{% endblock %}">
+{% block content %}{% endblock %}
+</main>
+<footer class="site"><div class="wrap">
+ <div class="fcols">
+  <div><p><strong style="color:var(--ink)">{{ site.name }}</strong></p><p>{{ site.tagline }}.</p>{% if is_public %}<p>Download only content you own or have permission to use. We do not store posts or files.</p>{% else %}<p>Runs locally on your computer. Download only content you own or have permission to use.</p>{% endif %}</div>
+  {% for group, links in site.footer_groups %}<div><h3>{{ group }}</h3><ul>{% for label, path in links %}<li><a href="{{ path }}">{{ label }}</a></li>{% endfor %}</ul></div>{% endfor %}
+ </div>
+ <div class="fine"><span>Not affiliated with Instagram, Meta, LinkedIn or Pinterest.{% if page.path == '/' %} Photos from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>.{% endif %}</span><span><a href="{{ site.github }}" rel="noopener">Source code</a> · Last updated {{ site.updated }}</span></div>
+</div></footer>
+{% block scripts %}{% if page.tool %}<script src="{{ asset('app.js') }}" defer></script>{% endif %}{% endblock %}
+</body></html>

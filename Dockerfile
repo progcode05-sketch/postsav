@@ -19,7 +19,7 @@ RUN apt-get update \
 COPY requirements.txt ./
 RUN python -m pip install --no-cache-dir -r requirements.txt
 
-COPY app.py limits.py media_sources.py wsgi.py gunicorn.conf.py ./
+COPY app.py limits.py media_sources.py seo.py site_content.py wsgi.py gunicorn.conf.py ./
 COPY templates ./templates
 COPY static ./static
 

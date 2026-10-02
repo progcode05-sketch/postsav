@@ -1,0 +1,23 @@
+{# Content blocks rendered from site_content.py. Questions, steps and facts here are the same data used for JSON-LD. #}
+{% macro head(s) %}<div class="head">{% if s.kicker %}<div class="kicker">{{ s.kicker }}</div>{% endif %}<h2>{{ s.heading }}</h2>{% if s.intro %}<p class="lead">{{ s.intro|md }}</p>{% endif %}</div>{% endmacro %}
+
+{% macro section(s) %}
+{% if s.type == 'steps' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<div class="steps">{% for name, text in s['items'] %}<div class="step"><div class="n">{{ loop.index }}</div><h3>{{ name }}</h3><p>{{ text|md }}</p></div>{% endfor %}</div></section>
+{% elif s.type == 'facts' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<dl class="glance">{% for label, text in s['items'] %}<div><dt>{{ label }}</dt><dd>{{ text|md }}</dd></div>{% endfor %}</dl></section>
+{% elif s.type == 'table' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<div class="tbl"><table><thead><tr>{% for c in s.columns %}<th scope="col">{{ c }}</th>{% endfor %}</tr></thead><tbody>{% for row in s.rows %}<tr>{% for cell in row %}{% if loop.first %}<th scope="row">{{ cell|md }}</th>{% else %}<td>{{ cell|md }}</td>{% endif %}{% endfor %}</tr>{% endfor %}</tbody></table></div></section>
+{% elif s.type == 'prose' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<div class="prose">{% for p in s.paragraphs %}<p>{{ p|md }}</p>{% endfor %}</div></section>
+{% elif s.type == 'faq' %}
+<section class="block faq" id="{{ s.id }}">{{ head(s) }}{% for q, a in s['items'] %}<details><summary><h3>{{ q }}</h3></summary><p>{{ a|md }}</p></details>{% endfor %}</section>
+{% elif s.type == 'sources' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<ul class="sources">{% for title, url, note in s['items'] %}<li><a href="{{ url }}" rel="noopener">{{ title }}</a>: {{ note }}</li>{% endfor %}</ul></section>
+{% elif s.type == 'cards' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<div class="pcards">{% for cls, icon, title, path, text in s['items'] %}<a class="pcard" href="{{ path }}"><div class="ic {{ cls }}">{{ icon }}</div><h3>{{ title }}</h3><p>{{ text }}</p><span class="go">Open the guide →</span></a>{% endfor %}</div></section>
+{% elif s.type == 'features' %}
+<section class="block" id="{{ s.id }}">{{ head(s) }}<div class="feats">{% for img, alt, w, h, pos, tag, title, text in s['items'] %}<div class="feat"><div class="art"><img src="/static/img/{{ img }}.webp" alt="{{ alt }}" width="{{ w }}" height="{{ h }}" loading="lazy" decoding="async" style="object-position:{{ pos }}"><span class="tag">{{ tag }}</span></div><div class="txt"><h3>{{ title }}</h3><p>{{ text }}</p></div></div>{% endfor %}</div>
+{% if s.trust %}<div class="trust">{% for strong, small in s.trust %}<div><b>{{ strong }}</b><span>{{ small }}</span></div>{% endfor %}</div>{% endif %}</section>
+{% endif %}
+{% endmacro %}

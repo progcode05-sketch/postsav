@@ -1,35 +1,14 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex">
-<title>{{ title }} · Social Downloader</title>
-{% include '_styles.html' %}
-<style>
-main.doc{max-width:780px;padding-top:48px}
-.doc h1{font-size:clamp(32px,5vw,46px);letter-spacing:-.04em;line-height:1.1;margin:0 0 10px;font-weight:800}
-.doc h2{font-size:19px;letter-spacing:-.02em;margin:34px 0 6px}
-.doc p,.doc li{color:var(--muted)}
-.doc .paper{margin-top:26px;padding:8px 32px 28px;background:rgba(255,255,255,.88);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow)}
-.doc .card{padding:14px 18px;border-radius:14px}.doc .warn{background:#fff7e6;border:1px solid #f3d9a4;color:var(--warn)}
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-top:20px}.tabs a{padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.7);color:var(--muted);text-decoration:none;font-size:14px;font-weight:500}.tabs a:hover{background:var(--soft)}.tabs a[aria-current]{background:var(--ink);border-color:var(--ink);color:#fff}
-@media(max-width:560px){.doc .paper{padding:4px 20px 22px;border-radius:22px}}
-</style>
-</head>
-<body>
-<header class="nav"><div class="nav-in">
- <a class="brand" href="/" aria-label="Social Downloader home"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="10" fill="url(#g)"/><path d="M16 8v11m0 0-4.5-4.5M16 19l4.5-4.5M9.5 23h13" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g" x1="4" y1="2" x2="28" y2="30"><stop stop-color="#6a95ff"/><stop offset="1" stop-color="#2f5bf0"/></linearGradient></defs></svg>Social Downloader</a>
- <nav class="nav-links" aria-label="Main"><a class="pill keep" href="/">← Back to downloader</a></nav>
-</div></header>
-<main class="wrap doc">
-<nav class="tabs" aria-label="Legal pages">{% for slug, name in pages.items() %}<a href="/{{ slug }}"{% if slug == page %} aria-current="page"{% endif %}>{{ name }}</a>{% endfor %}</nav>
-<h1 style="margin-top:28px">{{ title }}</h1>
-<p>Social Downloader is a free beta tool. {% if operator %}It is operated by {{ operator }}.{% endif %}</p>
+{% extends 'base.html' %}
+{% block main_class %} doc{% endblock %}
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Home</a><i>/</i><span aria-current="page">{{ page.name }}</span></nav>
+<nav class="tabs" aria-label="Legal pages">{% for key, name in pages.items() %}<a href="/{{ key }}"{% if key == slug %} aria-current="page"{% endif %}>{{ name }}</a>{% endfor %}</nav>
+<h1 style="margin-top:28px">{{ page.name }}</h1>
+<p>{{ site.name }} is a free beta tool. {% if operator %}It is operated by {{ operator }}.{% endif %}</p>
 {% if not email %}<p class="card warn">The contact address for this service has not been configured yet. Until it is, this page is incomplete.</p>{% endif %}
 
 <div class="paper">
-{% if page == 'terms' %}
+{% if slug == 'terms' %}
 <h2>What the service does</h2>
 <p>You paste the link of a public Instagram, LinkedIn or Pinterest post or pin. The service fetches the images, videos or document slides that the platform makes publicly available and lets you save them to your device individually or as a ZIP file.</p>
 <h2>Your responsibilities</h2>
@@ -41,7 +20,7 @@ main.doc{max-width:780px;padding-top:48px}
 <h2>Changes</h2>
 <p>These terms may change while the service is in beta. Continuing to use the service means you accept the current version.</p>
 
-{% elif page == 'privacy' %}
+{% elif slug == 'privacy' %}
 <h2>What we process</h2>
 <p>The post or pin link you submit is sent to our server, which contacts Instagram, LinkedIn or Pinterest to find the media. Share links (lnkd.in, pin.it) are opened on our server to find the post they point to, and any sender or tracking details in them are discarded. We keep the details of that post (caption, uploader name and media addresses) only so your download links work, for at most {{ ttl }} minutes, in the server's memory or in a short-lived Redis entry that expires on its own. We do not keep a history of the links you submit.</p>
 <h2>Files</h2>
@@ -55,19 +34,18 @@ main.doc{max-width:780px;padding-top:48px}
 <h2>Your requests</h2>
 <p>Because we keep no profile of you, there is little to retrieve or delete. For any privacy question, see the <a href="/contact">contact page</a>.</p>
 
-{% elif page == 'copyright' %}
+{% elif slug == 'copyright' %}
 <h2>Copyright and takedown</h2>
 <p>The service does not host or publish anyone's content. It only helps a user save media from a public post that the user chose, and files are deleted after the transfer. We respect intellectual property rights.</p>
 <h2>If you are a rights holder</h2>
 <p>If you believe the service is being used in a way that infringes your rights, or you want requests for your content blocked, write to the <a href="/contact">contact address</a> with: the link to the post, a description of the work, your name and contact details, and a statement that you are the owner or authorised to act for the owner. We will review good-faith requests promptly and may block the affected posts or accounts.</p>
 <p>Removing the original from Instagram, LinkedIn or Pinterest also stops it from being fetched here.</p>
 
-{% elif page == 'contact' %}
+{% elif slug == 'contact' %}
 <h2>Get in touch</h2>
 {% if email %}<p>Email: <a href="mailto:{{ email }}">{{ email }}</a>{% if operator %} ({{ operator }}){% endif %}</p>{% else %}<p class="card warn">No contact address has been configured yet.</p>{% endif %}
 <p>Use this address for takedown requests, privacy questions, abuse reports and bug reports. Please include the post link when reporting a problem; do not send passwords or login cookies.</p>
 {% endif %}
 </div>
-</main>
-<footer class="site"><div class="wrap cols"><div><p><strong style="color:var(--ink)">Social Downloader</strong></p><p>Not affiliated with Instagram, Meta, LinkedIn or Pinterest.</p></div><nav aria-label="Legal">{% for slug, name in pages.items() %}<a href="/{{ slug }}">{{ name }}</a>{% endfor %}</nav></div></footer>
-</body></html>
+<p class="updated">Last updated: <time datetime="{{ page.updated }}">{{ updated_display }}</time></p>
+{% endblock %}

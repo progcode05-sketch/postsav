@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% import '_blocks.html' as blocks %}
+{% block content %}
+<nav class="crumbs" aria-label="Breadcrumb">{% for name, path in page.breadcrumb %}{% if not loop.last %}<a href="{{ path }}">{{ name }}</a><i>/</i>{% else %}<span aria-current="page">{{ name }}</span>{% endif %}{% endfor %}</nav>
+<section class="hero solo" id="top">
+ <div>
+  <span class="eyebrow"><i></i>{{ page.eyebrow }}</span>
+  <h1><span class="soft">{{ page.h1_soft }}</span><br><span class="hi">{{ page.h1_hi }}</span></h1>
+  <p class="sub">{{ page.lead|md }}</p>
+  {% if page.tool %}{% include '_tool.html' %}{% endif %}
+ </div>
+</section>
+{% if page.tool %}{% include '_result.html' %}{% endif %}
+{% for s in page.sections %}{{ blocks.section(s) }}
+{% endfor %}
+<p class="updated">Last updated: <time datetime="{{ page.updated }}">{{ updated_display }}</time>{% if page.kind == 'platform' %}. Tested on real public posts on {{ site.tested }}.{% endif %}</p>
+{% endblock %}

@@ -1,94 +1,12 @@
-<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Download available images, videos and carousel slides from Instagram, LinkedIn and Pinterest posts.">
-<meta name="theme-color" content="#f4f8ff">
-<title>Social Downloader · Instagram, LinkedIn & Pinterest</title>
-{% include '_styles.html' %}
-<style>
-.hero{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:40px;align-items:center;padding:72px 0 24px}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.8);color:var(--accent-ink);font-size:13px;font-weight:600}
-.eyebrow i{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 0 4px rgba(26,168,107,.18)}
-h1{font-size:clamp(36px,5.2vw,60px);line-height:1.04;letter-spacing:-.045em;margin:20px 0 18px;font-weight:800}
-h1 .soft{color:#76829f}h1 .hi{color:var(--accent)}
-.sub{color:var(--muted);font-size:18px;max-width:520px;margin:0 0 26px}
-.ack{display:flex;gap:10px;align-items:flex-start;margin:0 0 12px;color:var(--muted);font-size:14px;max-width:560px}
-.ack input{flex:none;width:18px;height:18px;margin-top:3px;accent-color:var(--accent)}
-form#f{display:flex;gap:8px;align-items:center;padding:8px;max-width:600px;border:1px solid var(--line);border-radius:999px;background:#fff;box-shadow:var(--shadow);transition:box-shadow .2s,border-color .2s}
-form#f:focus-within{border-color:#b7ccff;box-shadow:0 0 0 4px rgba(47,107,255,.12),var(--shadow)}
-form#f input[type=url]{flex:1;min-width:0;border:0;background:transparent;padding:12px 8px 12px 18px;color:var(--ink);font:inherit;font-size:15px;outline:0}
-form#f input::placeholder{color:#8a96b2}
-form#f .btn{flex:none}
-form#f.busy .btn::before{content:"";width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.5);border-top-color:#fff;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#msg{min-height:26px;margin:14px 6px 0;color:var(--muted);font-size:14px;max-width:600px}#msg.err{color:var(--err);font-weight:500}
-.dot{width:8px;height:8px;border-radius:50%;display:inline-block}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:22px}.chip{display:inline-flex;gap:6px;align-items:center;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:rgba(255,255,255,.7);font-size:13px;color:var(--muted)}
-.visual{position:relative;height:430px}
-.orb{position:absolute;inset:6% 4% 4% 10%;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0,#dce8ff 38%,#bcd2ff 72%,#a9c3ff 100%);filter:blur(2px);opacity:.9}
-.orb::after{content:"";position:absolute;inset:-9%;border-radius:50%;border:1.5px dashed rgba(47,107,255,.25)}
-.vcard{position:absolute;display:flex;align-items:center;gap:12px;padding:14px 16px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.9);border-radius:20px;box-shadow:0 18px 40px -16px rgba(32,64,160,.35);animation:float 7s ease-in-out infinite}
-.vcard b{display:block;font-size:14px;letter-spacing:-.01em}.vcard small{display:block;color:var(--muted);font-size:12px}
-.vcard .ic{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex:none}
-.ic.pin{background:#e60023}.ic.ig{background:linear-gradient(135deg,#f9a03f,#e1306c 55%,#7b3fe4)}.ic.li{background:#0a66c2}.ic.zip{background:linear-gradient(135deg,#6a8dff,#2f6bff)}
-.chk{margin-left:8px;width:22px;height:22px;border-radius:50%;background:rgba(26,168,107,.14);color:var(--ok);display:grid;place-items:center;font-style:normal;font-size:12px;font-weight:800;flex:none}
-.v1{top:6%;left:0;animation-delay:0s}.v2{top:36%;right:0;width:300px;flex-direction:column;align-items:stretch;gap:10px;animation-delay:-2.2s}.v3{bottom:6%;left:3%;animation-delay:-4.4s}.v4{bottom:3%;right:0;padding:12px 14px;animation-delay:-1.1s}
-.slides{display:flex;gap:6px}.slides i{flex:1;aspect-ratio:1;border-radius:8px;background:linear-gradient(135deg,#dbe7ff,#b9ceff)}.slides i:nth-child(2n){background:linear-gradient(135deg,#e8efff,#c8d8ff)}
-.bar{height:6px;border-radius:99px;background:var(--soft);overflow:hidden}.bar::after{content:"";display:block;width:78%;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent-2),var(--accent))}
-@keyframes float{50%{transform:translateY(-10px)}}
-#result[hidden]{display:none}
-#result{margin:40px 0 0;padding:24px;background:rgba(255,255,255,.85);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);scroll-margin-top:90px}
-.post{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:4px 4px 20px}
-.post strong{font-size:17px;letter-spacing:-.01em}.post p{margin:4px 0 0;color:var(--muted);font-size:14px;max-width:640px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.actions{display:flex;gap:8px;flex-wrap:wrap;flex:none}
-#warnings{color:var(--warn);background:#fff7e6;border-radius:12px;font-size:14px}#warnings:not(:empty){padding:10px 14px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
-.asset{overflow:hidden;border:1px solid var(--line);border-radius:var(--radius);background:#fff;transition:transform .2s,box-shadow .2s}
-.asset:hover{transform:translateY(-3px);box-shadow:var(--shadow)}
-.preview{display:block;width:100%;height:230px;object-fit:contain;background:linear-gradient(#f3f7ff,#e9f0ff)}
-.placeholder{height:230px;display:grid;place-items:center;font-size:40px;color:#8ba4e6;background:linear-gradient(#f3f7ff,#e9f0ff)}
-.asset-meta{padding:14px}.asset-meta p{margin:0 0 10px;font-size:14px;font-weight:600}.asset-meta .btn{width:100%}
-section.block{padding:84px 0 0}
-.kicker{color:var(--accent-ink);font-weight:700;font-size:13px;letter-spacing:.1em;text-transform:uppercase}
-h2{font-size:clamp(28px,4vw,40px);line-height:1.12;letter-spacing:-.035em;margin:10px 0 12px;font-weight:800}
-.lead{color:var(--muted);max-width:560px;margin:0}
-.head{margin-bottom:34px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-.step,.feat{position:relative;padding:26px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
-.step .n{width:36px;height:36px;border-radius:12px;background:var(--soft);color:var(--accent-ink);display:grid;place-items:center;font-weight:800;margin-bottom:16px}
-.step h3,.feat h3{margin:0 0 6px;font-size:19px;letter-spacing:-.02em}.step p,.feat p{margin:0;color:var(--muted);font-size:15px}
-.feats{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
-.feat{padding:0;overflow:hidden;transition:transform .25s,box-shadow .25s}.feat:hover{transform:translateY(-4px)}.feat .txt{padding:22px 26px 26px}
-.feat .art{position:relative;height:230px;background:linear-gradient(160deg,#eaf1ff,#dbe7ff);border-bottom:1px solid var(--line);overflow:hidden}
-.feat .art img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .6s}.feat:hover .art img{transform:scale(1.04)}
-.feat .art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(47,107,255,.06),rgba(15,26,58,.18))}
-.tag{position:absolute;z-index:1;left:14px;bottom:14px;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 8px 20px -10px rgba(15,26,58,.5);font-size:12px;font-weight:700;color:var(--accent-ink)}
-.trust{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:56px;background:rgba(255,255,255,.85);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow)}
-.trust div{padding:24px 26px;border-left:1px solid var(--line)}.trust div:first-child{border-left:0}.trust b{display:block;font-size:17px;letter-spacing:-.02em}.trust span{color:var(--muted);font-size:14px}
-details{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.85);padding:4px 20px;margin-bottom:12px}
-summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;padding:16px 0;font-weight:600}summary::-webkit-details-marker{display:none}summary::after{content:"+";color:var(--accent);font-size:22px;line-height:1}details[open] summary::after{content:"–"}
-details p{margin:0 0 16px;color:var(--muted)}
-.faq{max-width:760px}
-code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
-@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:44px}.visual{display:none}.steps,.feats{grid-template-columns:1fr}.trust{grid-template-columns:1fr 1fr}.trust div:nth-child(3){border-left:0}.trust div:nth-child(n+3){border-top:1px solid var(--line)}}
-@media(max-width:560px){h1{font-size:38px}.sub{font-size:16px}form#f{border-radius:24px;flex-wrap:wrap;padding:8px}form#f input[type=url]{flex:1 1 100%;padding:10px 12px}form#f .btn{flex:1 1 100%}.post{flex-direction:column;align-items:stretch}.grid{grid-template-columns:1fr 1fr;gap:12px}.preview,.placeholder{height:160px}.asset-meta{padding:10px}#result{padding:16px;border-radius:22px}.trust{grid-template-columns:1fr}.trust div{border-left:0!important;border-top:1px solid var(--line)}.trust div:first-child{border-top:0}}
-</style>
-</head>
-<body>
-<header class="nav"><div class="nav-in">
- <a class="brand" href="/" aria-label="Social Downloader home"><svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><rect width="32" height="32" rx="10" fill="url(#g)"/><path d="M16 8v11m0 0-4.5-4.5M16 19l4.5-4.5M9.5 23h13" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="g" x1="4" y1="2" x2="28" y2="30"><stop stop-color="#6a95ff"/><stop offset="1" stop-color="#2f5bf0"/></linearGradient></defs></svg>Social Downloader</a>
- <nav class="nav-links" aria-label="Main"><a href="#how">How it works</a><a href="#features">What you can save</a><a href="#faq">FAQ</a><a class="pill keep" href="#top">Paste a link</a></nav>
-</div></header>
-<main class="wrap" id="top">
-<section class="hero">
+{% extends 'base.html' %}
+{% import '_blocks.html' as blocks %}
+{% block content %}
+<section class="hero" id="top">
  <div>
-  <span class="eyebrow"><i></i>Instagram + LinkedIn + Pinterest · free beta</span>
-  <h1><span class="soft">Your favorite posts.</span><br><span class="hi">Ready to save.</span></h1>
-  <p class="sub">Paste a post or pin link and download its images, videos and carousel slides from Instagram, LinkedIn or Pinterest. Grab files one by one, or take everything in a single ZIP.</p>
-  {% if public_mode %}<label class="ack"><input type="checkbox" id="ack"><span>I own this content or have permission to download it, and I accept the <a href="/terms" target="_blank" rel="noopener">Terms</a>.</span></label>{% endif %}
-  <form id="f"><input id="url" type="url" aria-label="Instagram, LinkedIn or Pinterest post URL" placeholder="Paste an Instagram, LinkedIn or Pinterest link" autocomplete="off" required><button class="btn" id="go">Fetch media</button></form>
-  <div id="msg" role="status" aria-live="polite"></div>
+  <span class="eyebrow"><i></i>{{ page.eyebrow }}</span>
+  <h1><span class="soft">{{ page.h1_soft }}</span><br><span class="hi">{{ page.h1_hi }}</span></h1>
+  <p class="sub">{{ page.lead|md }}</p>
+  {% include '_tool.html' %}
   <div class="chips"><span class="chip"><i class="dot" style="background:#2f6bff"></i>Images</span><span class="chip"><i class="dot" style="background:#e1306c"></i>Videos</span><span class="chip"><i class="dot" style="background:#0a66c2"></i>Carousel slides</span><span class="chip"><i class="dot" style="background:#e60023"></i>Pinterest pins</span><span class="chip"><i class="dot" style="background:#1aa86b"></i>ZIP bundle</span></div>
  </div>
  <div class="visual" aria-hidden="true">
@@ -99,93 +17,8 @@ code{background:var(--soft);padding:1px 6px;border-radius:6px;font-size:.9em}
   <div class="vcard v4"><span class="ic zip">ZIP</span><div><b>Download all</b><small>One ordered file</small></div></div>
  </div>
 </section>
-
-<section id="result" hidden><div class="post"><div><strong id="who"></strong><p id="caption"></p></div><div class="actions"><button class="btn sm" id="all">Download all · ZIP</button><button class="btn sm ghost" id="again">New link</button></div></div><div id="warnings"></div><div class="grid" id="assets"></div></section>
-
-<section class="block" id="how">
- <div class="head"><div class="kicker">How it works</div><h2>Three steps. No sign-up.</h2><p class="lead">No accounts and no extensions. Everything happens in your browser tab.</p></div>
- <div class="steps">
-  <div class="step"><div class="n">1</div><h3>Paste the link</h3><p>Copy the post or pin URL from Instagram, LinkedIn or Pinterest, including <code>lnkd.in</code> and <code>pin.it</code> share links, and paste it above.</p></div>
-  <div class="step"><div class="n">2</div><h3>Preview what's available</h3><p>We show every image, video or slide the platform makes publicly available for that post.</p></div>
-  <div class="step"><div class="n">3</div><h3>Save it</h3><p>Download a single file, or take the whole post as an ordered ZIP. Temporary files are removed afterwards.</p></div>
- </div>
-</section>
-
-<section class="block" id="features">
- <div class="head"><div class="kicker">What you can save</div><h2>Built for the posts you actually share</h2></div>
- <div class="feats">
-  <div class="feat"><div class="art"><img src="/static/img/feature-images.webp" alt="Hands holding a phone showing an Instagram feed" width="720" height="1080" loading="lazy" style="object-position:50% 38%"><span class="tag">JPG · PNG · WebP</span></div><div class="txt"><h3>Images and photo carousels</h3><p>Single photos and multi-image posts from Instagram and LinkedIn, plus full-size Pinterest pin images.</p></div></div>
-  <div class="feat"><div class="art"><img src="/static/img/feature-video.webp" alt="A presenter being filmed with a cinema camera in a studio" width="720" height="484" loading="lazy" style="object-position:50% 50%"><span class="tag">MP4</span></div><div class="txt"><h3>Videos and reels</h3><p>Instagram reels, LinkedIn videos and Pinterest video pins as standard MP4 files.</p></div></div>
-  <div class="feat"><div class="art"><img src="/static/img/feature-slides.webp" alt="A laptop showing a LinkedIn profile next to a phone" width="720" height="480" loading="lazy" style="object-position:50% 45%"><span class="tag">Slide by slide</span></div><div class="txt"><h3>LinkedIn document slides</h3><p>Carousel documents saved slide by slide as images, kept in their original order.</p></div></div>
-  <div class="feat"><div class="art"><img src="/static/img/feature-zip.webp" alt="A person using a laptop and a phone together" width="720" height="480" loading="lazy" style="object-position:50% 40%"><span class="tag">bundle.zip</span></div><div class="txt"><h3>One-click ZIP</h3><p>Everything in a post in a single download, named and ordered so it is easy to sort.</p></div></div>
- </div>
- <div class="trust">
-  <div><b>Three platforms</b><span>Instagram, LinkedIn, Pinterest</span></div>
-  <div><b>No sign-up</b><span>No account or login needed</span></div>
-  <div><b>Not stored</b><span>Files deleted when done</span></div>
-  <div><b>Free beta</b><span>No ads, no trackers</span></div>
- </div>
-</section>
-
-<section class="block faq" id="faq">
- <div class="head"><div class="kicker">FAQ</div><h2>Good to know</h2></div>
- <details><summary>Why can't I fetch some posts?</summary><p>Only publicly available media can be fetched. Private accounts, sign-in-only posts and anything the platform blocks may be unavailable, and platforms change over time.</p></details>
- <details><summary>Which Pinterest links work?</summary><p>Pin links (<code>pinterest.com/pin/…</code>, including regional versions) and <code>pin.it</code> share links. Boards and profiles are not supported, and a few pins that Pinterest hides from signed-out visitors cannot be fetched.</p></details>
- <details><summary>Do you keep my files or links?</summary><p>No. Post details are held for 15 minutes so your download links work, and files are written temporarily while being prepared and then deleted. See the <a href="/privacy">privacy policy</a>.</p></details>
- <details><summary>Is it free? Are there limits?</summary><p>It is a free beta. To keep it fast for everyone there are request limits, up to 250 MB per file, and 500 MB per ZIP.</p></details>
- <details><summary>Can I download anyone's content?</summary><p>Only save content you own or have permission to use. See the <a href="/terms">terms</a> and the <a href="/copyright">copyright and takedown</a> page.</p></details>
-</section>
-</main>
-<footer class="site"><div class="wrap cols">
- <div><p><strong style="color:var(--ink)">Social Downloader</strong></p><p>Publicly accessible posts work best. Availability depends on the platform; private or sign-in-only media may be unavailable.</p>{% if public_mode %}<p>Download only content you own or have permission to use. We do not store posts or files. Not affiliated with Instagram, LinkedIn or Pinterest. Photos from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>.</p>{% else %}<p>Runs locally on your computer. Download only content you own or have permission to use.</p>{% endif %}</div>
- <nav aria-label="Legal"><a href="/terms">Terms</a><a href="/privacy">Privacy</a><a href="/copyright">Copyright &amp; takedown</a><a href="/contact">Contact</a></nav>
-</div></footer>
-<script>
-const PUBLIC_MODE={{ 'true' if public_mode else 'false' }};
-const $=id=>document.getElementById(id);
-const setMsg=(text,error=false)=>{$('msg').textContent=text;$('msg').className=error?'err':''};
-let current=null, generation=0, controller=null, downloading=false, fetchingURL=null;
-async function readJSON(res){
- const type=res.headers.get('Content-Type')||'';
- if(!type.includes('application/json'))throw new Error('The server could not complete this request. Please try again.');
- return res.json();
-}
-async function download(asset,button){
- if(!current || downloading)return;
- downloading=true;document.querySelectorAll('button').forEach(b=>b.disabled=true);setMsg(asset==='all'?'Preparing your ZIP…':'Downloading attachment…');
- try{
-  const res=await fetch('/api/download?'+new URLSearchParams({session:current.session,asset}));
-  if(!res.ok){const data=await readJSON(res);throw new Error(data.error||'Download failed.')}
-  const blob=await res.blob(), link=document.createElement('a'), objectURL=URL.createObjectURL(blob);
-  const disposition=res.headers.get('Content-Disposition')||'';
-  const encoded=disposition.match(/filename\*=UTF-8''([^;]+)/i), plain=disposition.match(/filename="?([^";]+)"?/i);
-  link.download=encoded?decodeURIComponent(encoded[1]):plain?plain[1]:'download';
-  link.href=objectURL;document.body.append(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(objectURL),60000);
-  setMsg('Download ready. Check your browser downloads.');
- }catch(err){setMsg(err.message,true)}finally{document.querySelectorAll('button').forEach(b=>b.disabled=false);downloading=false}
-}
-$('url').addEventListener('paste',()=>setTimeout(()=>{if(PUBLIC_MODE&&!$('ack').checked){setMsg('Tick the confirmation box, then press Fetch media.',true);return}$('f').requestSubmit()},0));
-$('f').addEventListener('submit',async e=>{
- e.preventDefault();if(downloading){setMsg('Wait for the current download to finish.');return}
- if(PUBLIC_MODE&&!$('ack').checked){setMsg('Please confirm that you own this content or have permission to download it.',true);return}
- const enteredURL=$('url').value.trim();if(fetchingURL===enteredURL)return;fetchingURL=enteredURL;
- controller?.abort();controller=new AbortController();const mine=++generation;
- current=null;$('result').hidden=true;$('go').disabled=true;$('f').classList.add('busy');setMsg('Finding available media…');
- try{
-  const res=await fetch('/api/info',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:enteredURL,ack:PUBLIC_MODE?$('ack').checked:undefined}),signal:controller.signal});
-  const data=await readJSON(res);if(mine!==generation)return;if(!res.ok)throw new Error(data.error||'Could not fetch this post.');
-  current=data;$('who').textContent=({linkedin:'LinkedIn',pinterest:'Pinterest'}[data.platform]||'Instagram')+(data.uploader?' · '+data.uploader:'');$('caption').textContent=data.title;
-  $('warnings').textContent=(data.warnings||[]).join(' ');$('assets').replaceChildren();
-  for(const asset of data.assets){
-   const card=document.createElement('article');card.className='asset';
-   if(asset.thumbnail){const img=document.createElement('img');img.className='preview';img.src=asset.thumbnail;img.alt=asset.label;img.referrerPolicy='no-referrer';img.loading='lazy';img.addEventListener('error',()=>{const placeholder=document.createElement('div');placeholder.className='placeholder';placeholder.textContent=asset.kind==='video'?'▶':'▤';img.replaceWith(placeholder)},{once:true});card.append(img)}
-   else{const placeholder=document.createElement('div');placeholder.className='placeholder';placeholder.textContent=asset.kind==='video'?'▶':'▤';card.append(placeholder)}
-   const meta=document.createElement('div');meta.className='asset-meta';const label=document.createElement('p');label.textContent=asset.label;
-   const button=document.createElement('button');button.className='btn sm';button.textContent=asset.kind==='video'?'Download video':asset.kind==='document'?'Download PDF':'Download image';button.addEventListener('click',()=>download(asset.id,button));meta.append(label,button);card.append(meta);$('assets').append(card);
-  }
-  $('all').hidden=data.assets.length<2;$('result').hidden=false;$('result').scrollIntoView({behavior:'smooth',block:'start'});setMsg(`${data.assets.length} attachment${data.assets.length===1?'':'s'} ready · links expire in 15 minutes`);
- }catch(err){if(mine===generation&&err.name!=='AbortError')setMsg(err.message,true)}finally{if(mine===generation){$('go').disabled=false;$('f').classList.remove('busy');fetchingURL=null}}
-});
-$('all').addEventListener('click',()=>download('all',$('all')));
-$('again').addEventListener('click',()=>{if(downloading)return;controller?.abort();generation++;current=null;fetchingURL=null;$('result').hidden=true;$('go').disabled=false;$('f').classList.remove('busy');$('url').value='';setMsg('');$('url').focus()});
-</script></body></html>
+{% include '_result.html' %}
+{% for s in page.sections %}{{ blocks.section(s) }}
+{% endfor %}
+<p class="updated">Last updated: <time datetime="{{ page.updated }}">{{ updated_display }}</time>. Tested on real public posts on {{ site.tested }}.</p>
+{% endblock %}

@@ -21,6 +21,8 @@ import requests
 import yt_dlp
 from media_sources import PINTEREST_HOST, download_to_path, linkedin_post, instagram_post, pinterest_pin_url, pinterest_post
 from limits import DownloadGate, RateLimiter
+import seo
+import site_content
 
 
 def env_int(name, default):
@@ -401,20 +403,20 @@ def guard_requests():
             return response
 
 
-@app.get('/')
-def index():
-    return render_template('index.html', public_mode=PUBLIC_MODE)
+# Home, platform pages, sitemap, robots.txt, llms.txt and the 404 page are registered by seo.py.
+seo.init_app(app, lambda: PUBLIC_MODE)
 
-
-LEGAL_PAGES = {'terms': 'Terms of Use', 'privacy': 'Privacy Policy', 'copyright': 'Copyright and Takedown', 'contact': 'Contact'}
+LEGAL_PAGES = {path.lstrip('/'): meta['name'] for path, meta in site_content.LEGAL.items()}
 
 
 @app.get('/<page>')
 def legal(page):
-    if page not in LEGAL_PAGES:
+    meta = site_content.LEGAL.get('/' + page)
+    if not meta:
         abort(404)
-    return render_template('legal.html', page=page, title=LEGAL_PAGES[page], pages=LEGAL_PAGES, operator=OPERATOR_NAME,
-                           email=CONTACT_EMAIL, ttl=SESSION_TTL // 60, stale=STALE_DOWNLOAD_AGE // 60)
+    body = render_template('legal.html', is_public=PUBLIC_MODE, slug=page, pages=LEGAL_PAGES, operator=OPERATOR_NAME, email=CONTACT_EMAIL,
+                           ttl=SESSION_TTL // 60, stale=STALE_DOWNLOAD_AGE // 60, **seo.page_meta(meta))
+    return seo.conditional(Response(body, mimetype='text/html'), body)
 
 
 @app.get('/healthz')
@@ -528,9 +530,14 @@ def download():
 @app.after_request
 def response_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
-    response.headers['Referrer-Policy'] = 'no-referrer'
     if request.path.startswith('/api/') or request.path in ('/healthz', '/readyz'):
+        # Operational endpoints are never content: keep them out of search results and caches.
         response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        response.headers['X-Robots-Tag'] = 'noindex, nofollow'
+    else:
+        # Outbound links tell the sites we cite where the visit came from (origin only); thumbnails set their own no-referrer policy.
+        response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
     return response
 
 

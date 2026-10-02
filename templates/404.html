@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% import '_blocks.html' as blocks %}
+{% block content %}
+<section class="notfound">
+ <h1>Page not found</h1>
+ <p class="sub">That page does not exist, or it has moved. You can paste a link on the <a href="/">home page</a>, or open a guide for your platform.</p>
+ <div class="pcards">{% for cls, icon, title, path, text in [('li', 'in', 'LinkedIn downloader', '/linkedin-downloader', 'Carousel slides, videos and images.'), ('pin', 'P', 'Pinterest downloader', '/pinterest-downloader', 'Original-size images and MP4 pins.'), ('ig', 'IG', 'Instagram downloader', '/instagram-downloader', 'Reels, photos and carousels.')] %}<a class="pcard" href="{{ path }}"><div class="ic {{ cls }}">{{ icon }}</div><h3>{{ title }}</h3><p>{{ text }}</p><span class="go">Open the guide →</span></a>{% endfor %}</div>
+</section>
+{% endblock %}

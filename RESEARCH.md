@@ -38,7 +38,15 @@ Page variants differ between requests (sizes 1.26-1.49 MB). In sampling, about 1
 
 Security boundaries: input hosts are matched against Pinterest's regional domain pattern only to read the pin ID; requests go to `www.pinterest.com` (page) and `pinimg.com` (media) with every redirect revalidated, https only, no credentials, standard port.
 
-## 
+## SEO and GEO research (2026-10-03)
+
+Demand: Google and Bing autocomplete show people search platform + media type + "downloader" ("linkedin carousel downloader", "download linkedin carousel pdf", "pinterest video downloader", "download pinterest image full size", "pin.it downloader", "instagram reel downloader online"), so each platform has its own page. Competition: LinkedIn carousel results were small tools and tutorials (MyFeedIn, Contentdrips, extensions), Pinterest results were dedicated mid-size tools (Klickpin, SSSPin, PintSave, PinSaver) plus SaveFrom, and Instagram results were dominated by long-established sites (sssInstagram, SnapInsta, SaveFrom). Competitor pages stress "no login", "no watermark" and "HD"; this site can truthfully claim the first two, and avoids HD/4K claims it cannot back up.
+
+Naming: "PostSave" is an existing social-content product and a Django signal name; "Savelo", "CatchPost" and "PullPost" collide with existing products or hardware terms. "PostSav" is a unique token, matches the repository, and its domains showed no registration (RDAP, 2026-10-03).
+
+GEO method (AI-SEO skill references, Princeton GEO study, SE Ranking and ZipTie analyses): be indexed by Google, Bing and Brave; allow the AI crawlers; make passages extractable (definition first, FAQ, tables, steps); add cited sources and dated first-party statistics; keep content fresh; use schema markup; publish llms.txt and a machine-readable pricing file; earn third-party mentions. Keyword stuffing lowers AI visibility, so a test caps density. Operational risk found in Render's docs: while a free web service is asleep, `/robots.txt` automatically returns a disallow-all response, so the uptime monitor on `/healthz` is part of the SEO setup.
+
+## Hosting implications and practical limits
 
 `media_sources.py` owns extraction and trusted media fetching; Flask owns presentation and expiring session tokens. Client requests specify a session and attachment ID rather than arbitrary media URLs. CDN fetching validates HTTPS and hostnames on every redirect, bounds response size, uses timeouts and checks returned media MIME types. This reduces arbitrary URL proxy exposure; it is not a substitute for full production egress controls or abuse limits. Instagram's yt-dlp network path has its own upstream redirect handling.
 

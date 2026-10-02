@@ -1,4 +1,6 @@
-# Social Downloader — Instagram, LinkedIn & Pinterest
+# PostSav: free Instagram, LinkedIn & Pinterest post downloader
+
+**Live site:** https://social-downloader-75g8.onrender.com. Paste the link of a public Instagram, LinkedIn or Pinterest post and download its images, videos and carousel slides, one by one or as a ZIP. No account, no watermark, and files are deleted when the transfer ends. Platform guides: [LinkedIn carousel, video and image downloader](https://social-downloader-75g8.onrender.com/linkedin-downloader), [Pinterest video and image downloader (pin.it)](https://social-downloader-75g8.onrender.com/pinterest-downloader), [Instagram Reel, photo and carousel downloader](https://social-downloader-75g8.onrender.com/instagram-downloader).
 
 A local Flask website for downloading available post attachments. Start it with `start-windows.bat` or `start-mac-linux.sh`. The launcher installs dependencies automatically and opens the browser after the server responds; Python 3.10+ is required. Optional ffmpeg enables merging separate video/audio streams.
 
@@ -61,7 +63,7 @@ Treat cookies as credentials. `.gitignore` excludes cookies and environment file
 ## Verification
 
 ```powershell
-python -m unittest -v test_app test_production test_public
+python -m unittest -v test_app test_production test_public test_pinterest test_seo
 python -m pip install -r requirements-dev.txt
 python verify_live.py
 ```
@@ -95,6 +97,17 @@ The Docker image sets `PUBLIC_MODE=1`. In public mode the app never reads `cooki
 4. Optionally point a free uptime monitor at `/healthz`. Without traffic the free service sleeps after 15 minutes and takes about a minute to wake; a monitor ping keeps it awake (750 free hours cover one always-on service).
 
 Free-tier facts checked on 2026-10-02 (Render docs): web service 512 MB RAM and 0.1 CPU; spins down after 15 idle minutes; ephemeral filesystem; 750 free instance hours per month; 5 GB outbound bandwidth per month included, and with no payment method Render suspends free services when it runs out; Key Value free plan is 25 MB, in-memory, 50 connections, one per workspace, and loses data on restart (sessions only live 15 minutes). Render is behind Cloudflare, so the blueprint sets `CLIENT_IP_HEADER=CF-Connecting-IP` for per-client limits instead of trusting `X-Forwarded-For`. Render says free instances are not for production use; this is a beta.
+
+## SEO and AI visibility
+
+Pages are server-rendered from `site_content.py` (one source for the visible text, the JSON-LD, `sitemap.xml`, `llms.txt` and `llms-full.txt`) and wired up by `seo.py`. Crawler files: `/robots.txt` (welcomes search and AI crawlers, hides the API), `/sitemap.xml`, `/llms.txt`, `/llms-full.txt`, `/pricing.md`, `/.well-known/security.txt`, `/site.webmanifest` and an IndexNow key file. Settings: `SITE_URL` (canonical origin; other hosts 301 to it), `SITE_NAME` (default PostSav), `GOOGLE_SITE_VERIFICATION`, `BING_SITE_VERIFICATION`, `GITHUB_URL`, `INDEXNOW_KEY`.
+
+```powershell
+python verify_seo.py https://your-site.example --external   # crawler files, metadata, schema, outbound links
+python indexnow.py https://your-site.example                 # tell Bing and other IndexNow engines
+```
+
+The full strategy, keyword map, custom-domain steps and monthly routine are in [docs/SEO.md](docs/SEO.md).
 
 ## Future public hosting
 
