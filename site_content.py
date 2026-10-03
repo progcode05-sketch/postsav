@@ -9,8 +9,8 @@ import os
 
 BRAND = os.environ.get('SITE_NAME', '').strip() or 'PostSav'
 TAGLINE = 'Free Instagram, LinkedIn & Pinterest post downloader'
-UPDATED = '2026-10-03'
-LEGAL_UPDATED = '2026-10-02'
+UPDATED = '2026-10-04'
+LEGAL_UPDATED = '2026-10-04'
 TESTED_ON = '2 October 2026'
 GITHUB_URL = os.environ.get('GITHUB_URL', 'https://github.com/progcode05-sketch/postsav').strip()
 # Mirrors app.py (a test keeps the two in sync).
@@ -70,7 +70,7 @@ TRUST = [
     ('Three platforms', 'Instagram, LinkedIn, Pinterest'),
     ('No sign-up', 'No account or login needed'),
     ('Not stored', 'Files deleted when done'),
-    ('Free beta', 'No ads, no trackers'),
+    ('Free beta', 'No subscription'),
 ]
 
 SHARE_STEPS = (
@@ -115,7 +115,7 @@ PAGES['/'] = dict(
             ('Works with', 'Public posts on Instagram, LinkedIn and Pinterest, including lnkd.in and pin.it share links.'),
             ('What you get', 'The image and video files the platform serves, one by one or as an ordered ZIP. No watermark is added.'),
             ('Limits', f"Up to {LIMITS['file_mb']} MB per file, {LIMITS['zip_mb']} MB per ZIP and {LIMITS['attachments']} attachments per post."),
-            ('Privacy', f"No accounts, cookies, ads or analytics. Files are deleted when the transfer ends; post details are kept for at most {LIMITS['session_minutes']} minutes."),
+            ('Privacy', f"No accounts. Files are deleted when the transfer ends; post details are kept for at most {LIMITS['session_minutes']} minutes. See the [privacy policy](/privacy) for optional analytics and advertising."),
             ('Last tested', f'On {TESTED_ON}, 17 of 17 real public post links (7 LinkedIn, 4 Instagram, 6 Pinterest) downloaded and validated, every attachment and every ZIP.'),
         ]),
         dict(type='faq', id='faq', kicker='FAQ', heading='Frequently asked questions', items=[
@@ -125,7 +125,7 @@ PAGES['/'] = dict(
             ('Can I download a LinkedIn carousel as images or a PDF?', 'As images, yes: every slide LinkedIn exposes is saved as a numbered image or together as a ZIP. A PDF is offered only when LinkedIn lets viewers download the original document. See the [LinkedIn downloader](/linkedin-downloader) for details.'),
             (f'Does {B} work with lnkd.in and pin.it short links?', 'Yes. Short links from LinkedIn (lnkd.in) and Pinterest (pin.it) are followed to the original post one redirect at a time, and tracking details such as the sender ID in Pinterest links are discarded.'),
             (f'Why can\'t {B} download some posts?', f'{B} only reads public posts and never uses a login. Private accounts, sign-in-only posts, text-only posts, stories and boards cannot be fetched, and a platform may occasionally limit requests. Try again later, or open the post and copy its link again.'),
-            (f'Does {B} store my files or links?', f"No. Downloads are written to temporary storage, streamed to your browser and deleted when the transfer finishes. Post details are kept for at most {LIMITS['session_minutes']} minutes so your download links work. There are no accounts, cookies, ads or analytics. Read the [privacy policy](/privacy)."),
+            (f'Does {B} store my files or links?', f"Downloads are written to temporary storage, streamed to your browser and deleted when the transfer finishes. Post details are kept for at most {LIMITS['session_minutes']} minutes so your download links work. There are no accounts. Read the [privacy policy](/privacy) for analytics and advertising settings."),
             ('What quality are the downloads?', 'You get the files the platform serves, without re-encoding or watermarks: original-size images on Pinterest, MP4 videos from all three platforms and every slide of a LinkedIn carousel. Quality cannot exceed what the platform makes public.'),
             ('Is it legal to download content from social media?', 'It depends on who owns the content and how you use it. Save posts you created or have permission to use; other people\'s posts are protected by copyright and by each platform\'s terms. This is general information, not legal advice. See the [terms](/terms) and [copyright and takedown](/copyright) pages.'),
         ]),
@@ -330,7 +330,7 @@ PAGES['/about'] = dict(
                  ('Files stream through, then disappear', 'Each download is written to temporary storage, streamed to your browser in small chunks and deleted when the transfer finishes. Abandoned files are swept automatically every few minutes.'),
              ]),
         dict(type='prose', id='principles', heading='What it will not do', paragraphs=[
-            f'{B} does not download private or sign-in-only content, does not bypass document download restrictions such as LinkedIn\'s PDF gate, and does not add watermarks, ads or trackers. '
+            f'{B} does not download private or sign-in-only content, does not bypass document download restrictions such as LinkedIn\'s PDF gate, and does not add watermarks to downloaded files. '
             'It is not affiliated with, or endorsed by, Instagram, Meta, LinkedIn or Pinterest.',
             'Downloaded files belong to their creators. The tool is meant for saving content you own or have permission to use. See the [terms](/terms) and the [copyright and takedown](/copyright) page.',
         ]),
@@ -358,7 +358,7 @@ LEGAL = {
     '/terms': dict(path='/terms', title=f'Terms of Use | {B}', name='Terms of Use',
                    description=f'Terms of use for {B}, a free tool for saving images, videos and carousel slides from public Instagram, LinkedIn and Pinterest posts.'),
     '/privacy': dict(path='/privacy', title=f'Privacy Policy | {B}', name='Privacy Policy',
-                     description=f'How {B} handles links, files, logs and cookies: no accounts, no ads or trackers, and downloads are deleted when the transfer ends.'),
+                     description=f'How {B} handles links, files, logs, cookies, optional Google Analytics and advertising. No accounts; downloads are deleted when transfers end.'),
     '/copyright': dict(path='/copyright', title=f'Copyright and Takedown | {B}', name='Copyright and Takedown',
                        description=f'How rights holders can report content and request blocks on {B}, a downloader for public Instagram, LinkedIn and Pinterest posts.'),
     '/contact': dict(path='/contact', title=f'Contact {B}', name='Contact',

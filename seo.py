@@ -121,6 +121,16 @@ def contact_email():
     return os.environ.get('CONTACT_EMAIL', '').strip()
 
 
+def google_services():
+    """Only validated public identifiers may reach tags or ads.txt."""
+    measurement = os.environ.get('GA_MEASUREMENT_ID', '').strip()
+    publisher = os.environ.get('ADSENSE_PUBLISHER_ID', '').strip()
+    measurement = measurement if re.fullmatch(r'G-[A-Z0-9]{4,20}', measurement) else ''
+    publisher = publisher if re.fullmatch(r'ca-pub-[0-9]{16}', publisher) else ''
+    enabled = os.environ.get('ADSENSE_ENABLED', '').lower() in ('1', 'true', 'yes', 'on')
+    return dict(measurement_id=measurement, publisher_id=publisher, ads_enabled=bool(publisher and enabled))
+
+
 def site_info(base):
     return dict(name=sc.BRAND, tagline=sc.TAGLINE, url=base, email=contact_email(), github=sc.GITHUB_URL,
                 updated=display_date(sc.UPDATED), tested=sc.TESTED_ON, nav=sc.NAV, footer_groups=sc.FOOTER_GROUPS,
@@ -204,7 +214,7 @@ def llms_txt(base):
              f'- Cost: free during the beta, no account.',
              f'- Platforms: Instagram (Reels, photos, carousels), LinkedIn (images, videos, carousel slides, lnkd.in links), Pinterest (original-size images, MP4 video pins, pin.it links).',
              f'- Limits: {sc.LIMITS["file_mb"]} MB per file, {sc.LIMITS["zip_mb"]} MB per ZIP, {sc.LIMITS["attachments"]} attachments per post.',
-             f'- Privacy: files are deleted when the transfer ends; no accounts, cookies, ads or analytics.',
+             f'- Privacy: files are deleted when the transfer ends; no accounts. Optional analytics and advertising are described in the privacy policy.',
              f'- Last tested: {sc.TESTED_ON}, 17 of 17 real public post links downloaded and validated.', '', '## Downloaders', '']
     for path in ('/linkedin-downloader', '/pinterest-downloader', '/instagram-downloader'):
         p = sc.PAGES[path]
@@ -298,7 +308,8 @@ def render_content_page(path, is_public):
     page = sc.PAGES[path]
     base = base_url()
     key = (path, base, bool(is_public), sc.BRAND, os.environ.get('CONTACT_EMAIL', ''),
-           os.environ.get('GOOGLE_SITE_VERIFICATION', ''), os.environ.get('BING_SITE_VERIFICATION', ''))
+           os.environ.get('GOOGLE_SITE_VERIFICATION', ''), os.environ.get('BING_SITE_VERIFICATION', ''),
+           tuple(google_services().values()))
     body = _page_cache.get(key)
     if body is None:
         body = render_template(page['template'], is_public=bool(is_public), **page_meta(page, base))
@@ -335,7 +346,14 @@ def init_app(app, is_public):
 
     @app.context_processor
     def inject():
-        return dict(site=site_info(base_url()), is_public=is_public())
+        return dict(site=site_info(base_url()), is_public=is_public(), google=google_services())
+
+    @app.get('/ads.txt')
+    def ads_txt():
+        publisher = google_services()['publisher_id']
+        if not publisher or not is_public():
+            return error_404()
+        return text_response(f'google.com, {publisher.removeprefix("ca-")}, DIRECT, f08c47fec0942fa0\n')
 
     @app.before_request
     def seo_redirects():

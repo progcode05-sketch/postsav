@@ -31,6 +31,9 @@
 <link rel="manifest" href="/site.webmanifest">
 <link rel="stylesheet" href="{{ asset('site.css') }}">
 {% if jsonld %}<script type="application/ld+json">{{ jsonld|safe }}</script>
+{% endif %}{% if is_public and not noindex and google.publisher_id %}
+<meta name="google-adsense-account" content="{{ google.publisher_id }}">
+{% if google.ads_enabled %}<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ google.publisher_id }}" crossorigin="anonymous"></script>{% endif %}
 {% endif %}</head>
 <body data-public="{{ 'true' if is_public else 'false' }}">
 <a class="skip" href="#main">Skip to content</a>
@@ -50,5 +53,13 @@
  </div>
  <div class="fine"><span>Not affiliated with Instagram, Meta, LinkedIn or Pinterest.{% if page.path == '/' %} Photos from <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a>.{% endif %}</span><span><a href="{{ site.github }}" rel="noopener">Source code</a> · Last updated {{ site.updated }}</span></div>
 </div></footer>
+{% if is_public and not noindex and google.measurement_id %}
+<div id="analytics-consent" class="consent-panel" role="region" aria-label="Analytics preferences" hidden>
+ <p>Allow Google Analytics to help us understand site usage? You can use all download features without it. <a href="/privacy">Privacy policy</a></p>
+ <div><button type="button" class="btn sm" id="analytics-accept">Allow analytics</button> <button type="button" class="btn ghost sm" id="analytics-reject">Reject analytics</button></div>
+</div>
+<div class="wrap"><button type="button" class="btn ghost sm" id="analytics-settings">Analytics preferences</button></div>
+<script src="{{ asset('privacy.js') }}" data-measurement-id="{{ google.measurement_id }}" defer></script>
+{% endif %}
 {% block scripts %}{% if page.tool %}<script src="{{ asset('app.js') }}" defer></script>{% endif %}{% endblock %}
 </body></html>

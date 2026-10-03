@@ -109,6 +109,15 @@ python indexnow.py https://your-site.example                 # tell Bing and oth
 
 The full strategy, keyword map, custom-domain steps and monthly routine are in [docs/SEO.md](docs/SEO.md).
 
+## Optional Google Analytics and AdSense
+
+See [docs/GOOGLE-SETUP.md](docs/GOOGLE-SETUP.md) for account setup, consent configuration and activation.
+Set `GA_MEASUREMENT_ID=G-...` to enable opt-in Analytics on public pages.
+Set `ADSENSE_PUBLISHER_ID=ca-pub-...` to publish the verification tag and `/ads.txt`;
+set `ADSENSE_ENABLED=1` only after AdSense approval and advertising consent setup.
+Both integrations are off by default and never load in local mode or on error pages.
+Consent behavior can be checked with `node tools/test_privacy.cjs`.
+
 ## Future public hosting
 
 The app is structured for extension. Remaining work before a public launch:
