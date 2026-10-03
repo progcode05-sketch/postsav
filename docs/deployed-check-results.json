@@ -1,0 +1,61 @@
+{
+  "site": "https://social-downloader-75g8.onrender.com",
+  "checked_at_utc": "2026-10-03T23:51:45.253734+00:00",
+  "results": [
+    {
+      "name": "ownership acknowledgment",
+      "status": "PASS",
+      "detail": {
+        "error": "Please confirm that you own this content or have permission to download it."
+      }
+    },
+    {
+      "name": "invalid URL",
+      "status": "PASS",
+      "detail": {
+        "error": "Paste an Instagram reel/post, LinkedIn post or Pinterest pin URL."
+      }
+    },
+    {
+      "name": "expired session",
+      "status": "PASS",
+      "detail": {
+        "error": "This download session expired. Fetch the post again."
+      }
+    },
+    {
+      "name": "unknown API route",
+      "status": "PASS",
+      "detail": {
+        "error": "Not found."
+      }
+    },
+    {
+      "name": "LinkedIn image carousel",
+      "status": "PASS",
+      "detail": {
+        "assets": 8,
+        "validated_bytes": 1350237,
+        "warnings": []
+      }
+    },
+    {
+      "name": "Pinterest image",
+      "status": "PASS",
+      "detail": {
+        "assets": 1,
+        "validated_bytes": 3752267,
+        "warnings": []
+      }
+    },
+    {
+      "name": "Instagram reel",
+      "status": "PASS",
+      "detail": {
+        "assets": 1,
+        "validated_bytes": 6521536,
+        "warnings": []
+      }
+    }
+  ]
+}

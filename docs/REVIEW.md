@@ -33,3 +33,13 @@ Official references:
 The updated offline suite passes 144 tests, including new coverage for HTTPS redirects, encoded redirect paths, cached verification tags, HTTP-error fallback behavior, simultaneous readiness checks and public Instagram extraction errors.
 
 No deployment or fresh browser performance measurement was performed. Existing Lighthouse scores and dated media results in other documents are historical evidence, not measurements from this review. Availability still depends on the upstream platforms. Rate limits, download slots and disk accounting are designed for the configured single-worker deployment; scaling to multiple workers or instances requires shared controls in addition to Redis session storage.
+
+## Deployment follow-up — 4 October 2026
+
+Pushed application changes as `b42b664` to `origin/main` and confirmed the live Render deployment serves JavaScript and CSS that exactly match those files. The updated mobile navigation landmark and encoded-path redirect also appeared live.
+
+`verify_seo.py https://social-downloader-75g8.onrender.com` passed all checks across nine pages. Readiness reported healthy storage and Redis, ffmpeg available and contact configured. Conditional page requests returned 304.
+
+`tools/check_deployed.py` now checks the real hosted API instead of the local Flask test client. All seven checks passed after deployment: ownership acknowledgment, invalid URL, expired session, unknown API endpoint, an eight-image LinkedIn carousel (individual image and all ZIP members validated), a Pinterest image and an Instagram reel (MP4 container validated). Results are saved in `docs/deployed-check-results.json`.
+
+These are sampled API and content checks, not an exhaustive browser, media-playback or load test. No additional application bugs were reproduced during this follow-up.
