@@ -4,6 +4,7 @@ import os
 import runpy
 import time
 import unittest
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from unittest.mock import patch
 
@@ -160,6 +161,14 @@ class CookieRefusalTests(Base):
             text = app.friendly_error(RuntimeError('login required'))
         self.assertNotIn('cookie', text.lower())
 
+    def test_failed_instagram_extraction_in_public_mode_does_not_suggest_cookies(self):
+        with patch.object(app, 'PUBLIC_MODE', True), patch('yt_dlp.YoutubeDL') as ydl, patch('instaloader.Post.from_shortcode', side_effect=RuntimeError('blocked')):
+            ydl.return_value.__enter__.return_value.extract_info.side_effect = RuntimeError('blocked')
+            response = self.client.post('/api/info', json={'url': 'https://www.instagram.com/p/ABC/', 'ack': True})
+        self.assertEqual(response.status_code, 502)
+        self.assertNotIn('cookie', response.json['error'].lower())
+        self.assertNotIn('README', response.json['error'])
+
 
 class RedisSessionTests(Base):
     def test_sessions_round_trip_through_redis_with_ttl(self):
@@ -209,6 +218,15 @@ class HealthAndLegalTests(Base):
         self.assertFalse(bad.json['checks']['redis'])
         with patch.object(app, 'MIN_FREE_DISK', 1 << 60):
             self.assertEqual(self.client.get('/readyz').status_code, 503)
+
+    def test_concurrent_readiness_checks_use_independent_probe_files(self):
+        def check(_index):
+            with app.app.test_client() as client:
+                return client.get('/readyz').status_code
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            self.assertEqual(list(executor.map(check, range(32))), [200] * 32)
+        self.assertFalse(any(name.startswith('.ready') for name in os.listdir(app.DOWNLOAD_DIR)))
 
     def test_health_checks_are_not_rate_limited(self):
         with patch.object(app, 'RATE_INFO_PER_MIN', 1), patch.object(app, 'RATE_DOWNLOAD_PER_MIN', 1):

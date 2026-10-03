@@ -9,7 +9,7 @@ import json
 import os
 import re
 from datetime import datetime, timedelta, timezone
-from urllib.parse import urlsplit
+from urllib.parse import quote, urlsplit
 
 from flask import Response, jsonify, redirect, render_template, request, send_from_directory
 from markupsafe import Markup
@@ -297,7 +297,8 @@ def conditional(response, body, max_age=300):
 def render_content_page(path, is_public):
     page = sc.PAGES[path]
     base = base_url()
-    key = (path, base, bool(is_public), sc.BRAND, os.environ.get('CONTACT_EMAIL', ''))
+    key = (path, base, bool(is_public), sc.BRAND, os.environ.get('CONTACT_EMAIL', ''),
+           os.environ.get('GOOGLE_SITE_VERIFICATION', ''), os.environ.get('BING_SITE_VERIFICATION', ''))
     body = _page_cache.get(key)
     if body is None:
         body = render_template(page['template'], is_public=bool(is_public), **page_meta(page, base))
@@ -315,10 +316,13 @@ def canonical_redirect():
     parts = urlsplit(explicit) if explicit.startswith(('https://', 'http://')) else None
     path = request.path
     wrong_host = bool(parts and parts.netloc.lower() != request.host.lower())
+    wrong_scheme = bool(parts and parts.scheme != request.scheme)
     trailing = len(path) > 1 and path.endswith('/')
-    if not (wrong_host or trailing):
+    if not (wrong_host or wrong_scheme or trailing):
         return None
-    target = (explicit if wrong_host else base_url()) + (path.rstrip('/') if trailing else path)
+    # request.path is decoded: re-encode reserved characters so they cannot
+    # become a query, fragment or a different path in the Location header.
+    target = (explicit if parts else base_url()) + quote(path.rstrip('/') if trailing else path, safe='/')
     if request.query_string:
         target += '?' + request.query_string.decode('utf-8', 'replace')
     return redirect(target, code=301)

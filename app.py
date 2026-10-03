@@ -352,9 +352,10 @@ def asset_file(post, asset, index, workdir):
             try:
                 _, mime = download_to_path(source, post['platform'], path, MAX_FILE)
                 break
-            except requests.HTTPError:
+            except requests.HTTPError as error:
                 # Only a missing/forbidden original falls back to the reduced-size copy (Pinterest images).
-                if attempt == len(sources) - 1:
+                if (error.response is None or error.response.status_code not in (403, 404)
+                        or attempt == len(sources) - 1):
                     raise
         extensions = {'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'video/mp4': '.mp4', 'application/pdf': '.pdf'}
         ext = extensions.get(mime)
@@ -431,10 +432,8 @@ def readyz():
     checks = {}
     try:
         os.makedirs(DOWNLOAD_DIR, exist_ok=True)
-        probe = os.path.join(DOWNLOAD_DIR, '.ready')
-        with open(probe, 'w') as handle:
+        with tempfile.NamedTemporaryFile(mode='w', prefix='.ready-', dir=DOWNLOAD_DIR) as handle:
             handle.write('ok')
-        os.remove(probe)
         checks['storage'] = shutil.disk_usage(DOWNLOAD_DIR).free >= MIN_FREE_DISK
     except OSError:
         checks['storage'] = False

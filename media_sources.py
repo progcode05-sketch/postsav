@@ -238,7 +238,7 @@ def instagram_post(url, ydl_opts):
         assets = candidate_assets
     except Exception:
         if not assets:
-            raise ValueError('Instagram did not expose media for this post. Try a public post. When running locally, Instagram cookie setup is described in the README.')
+            raise ValueError('Instagram did not expose media for this post. It may be restricted or temporarily blocked. Try another public post or try again later.')
         warnings.append('Only videos could be extracted. Any photo attachments in this post may be missing; Instagram may require a login session.')
     return dict(platform='instagram', url=url, title=(data.get('description') or data.get('title') or 'Instagram post')[:140], uploader=data.get('uploader') or '', assets=assets, warnings=warnings)
 

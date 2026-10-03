@@ -45,10 +45,10 @@ class DownloadGate:
 
         def release():
             # Safe to call from several cleanup paths; only the first one counts.
-            if released.is_set():
-                return
-            released.set()
             with self._lock:
+                if released.is_set():
+                    return
+                released.set()
                 remaining = self._active.get(client, 1) - 1
                 if remaining > 0:
                     self._active[client] = remaining

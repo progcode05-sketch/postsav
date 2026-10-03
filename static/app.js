@@ -43,7 +43,7 @@
     const meta=document.createElement('div');meta.className='asset-meta';const label=document.createElement('p');label.textContent=asset.label;
     const button=document.createElement('button');button.className='btn sm';button.textContent=asset.kind==='video'?'Download video':asset.kind==='document'?'Download PDF':'Download image';button.addEventListener('click',()=>download(asset.id,button));meta.append(label,button);card.append(meta);$('assets').append(card);
    }
-   $('all').hidden=data.assets.length<2;$('result').hidden=false;$('result').scrollIntoView({behavior:'smooth',block:'start'});setMsg(`${data.assets.length} attachment${data.assets.length===1?'':'s'} ready · links expire in 15 minutes`);
+   $('all').hidden=data.assets.length<2;$('result').hidden=false;$('result').scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});setMsg(`${data.assets.length} attachment${data.assets.length===1?'':'s'} ready · links expire in 15 minutes`);
   }catch(err){if(mine===generation&&err.name!=='AbortError')setMsg(err.message,true)}finally{if(mine===generation){$('go').disabled=false;$('f').classList.remove('busy');fetchingURL=null}}
  });
  $('all').addEventListener('click',()=>download('all',$('all')));

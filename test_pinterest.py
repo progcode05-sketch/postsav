@@ -300,6 +300,17 @@ class AppIntegrationTests(unittest.TestCase):
         self.assertEqual(response.status_code, 502)
         self.assertEqual(download.call_count, 1)
 
+    def test_throttling_and_server_errors_do_not_trigger_image_fallback(self):
+        token = app.remember(self.post)
+        for status in (429, 500, 503):
+            with self.subTest(status=status), patch('app.download_to_path', side_effect=requests.HTTPError(
+                    response=MagicMock(status_code=status))) as downloader:
+                response = self.client.get('/api/download', query_string={'session': token, 'asset': '0'})
+                self.assertEqual(response.status_code, 502)
+                self.assertEqual(downloader.call_count, 1)
+                self.assertEqual(app.download_gate.active, 0)
+                self.assertEqual(os.listdir(app.DOWNLOAD_DIR), [])
+
     def test_video_pin_downloads_mp4_and_zip_mixes_are_ordered(self):
         post = dict(self.post, assets=[dict(kind='video', source=MP4, thumbnail=THUMB, label='Video')])
         token = app.remember(post)

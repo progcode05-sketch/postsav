@@ -1,6 +1,6 @@
 <div id="tool" class="tool-wrap">
 {% if is_public %}<label class="ack"><input type="checkbox" id="ack"><span>I own this content or have permission to download it, and I accept the <a href="/terms" target="_blank" rel="noopener">Terms</a>.</span></label>{% endif %}
-<form id="f"><input id="url" type="url" aria-label="{{ page.tool_label }}" placeholder="{{ page.tool_placeholder }}" autocomplete="off" required><button class="btn" id="go">Fetch media</button></form>
+<form id="f"><input id="url" type="url" aria-label="{{ page.tool_label }}" aria-describedby="msg" placeholder="{{ page.tool_placeholder }}" autocomplete="off" required><button class="btn" id="go">Fetch media</button></form>
 <div id="msg" role="status" aria-live="polite"></div>
 <noscript><p class="noscript">JavaScript is needed to fetch and download media. Please enable it in your browser to use {{ site.name }}.</p></noscript>
 </div>

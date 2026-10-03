@@ -400,9 +400,24 @@ class CanonicalBaseTests(Base):
         soup = soup_of(self.client, '/')
         self.assertFalse(soup.find('meta', attrs={'name': 'google-site-verification'}))
         with patch.dict(os.environ, {'GOOGLE_SITE_VERIFICATION': 'abc123', 'BING_SITE_VERIFICATION': 'def456'}):
-            soup = soup_of(self.client, '/about')
+            soup = soup_of(self.client, '/')
         self.assertEqual(soup.find('meta', attrs={'name': 'google-site-verification'})['content'], 'abc123')
         self.assertEqual(soup.find('meta', attrs={'name': 'msvalidate.01'})['content'], 'def456')
+
+    def test_canonical_redirect_enforces_https_on_the_same_host(self):
+        with patch.dict(os.environ, {'SITE_URL': 'https://postsav.example'}):
+            response = self.client.get('/about/?source=test', base_url='http://postsav.example')
+            self.assertEqual(response.status_code, 301)
+            self.assertEqual(response.headers['Location'], 'https://postsav.example/about?source=test')
+            self.assertEqual(self.client.get('/about', base_url='https://postsav.example').status_code, 200)
+            self.assertEqual(self.client.get('/healthz', base_url='http://postsav.example').status_code, 200)
+
+    def test_redirect_preserves_encoded_path_characters(self):
+        with patch.dict(os.environ, {'SITE_URL': 'https://postsav.example'}):
+            response = self.client.get('/missing%23part%3Fvalue/?source=test', base_url='https://postsav.example')
+            self.assertEqual(response.status_code, 301)
+            self.assertEqual(response.headers['Location'], 'https://postsav.example/missing%23part%3Fvalue?source=test')
+            self.assertEqual(self.client.get(response.headers['Location']).status_code, 404)
 
     def test_brand_name_can_be_changed_with_one_setting(self):
         code = ("import app; c = app.app.test_client(); h = c.get('/').get_data(as_text=True); "
