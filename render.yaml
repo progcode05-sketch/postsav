@@ -12,6 +12,12 @@ services:
     envVars:
       - key: PUBLIC_MODE
         value: "1"
+      - key: GA_MEASUREMENT_ID
+        value: G-JMK4H2LRD3
+      - key: ADSENSE_PUBLISHER_ID
+        value: ca-pub-7254853329853324
+      - key: ADSENSE_ENABLED
+        value: "0"
       - key: CONTACT_EMAIL
         value: progcode03@gmail.com
       # Render sits behind Cloudflare; CF-Connecting-IP is the real client address.

@@ -115,7 +115,9 @@ See [docs/GOOGLE-SETUP.md](docs/GOOGLE-SETUP.md) for account setup, consent conf
 Set `GA_MEASUREMENT_ID=G-...` to enable opt-in Analytics on public pages.
 Set `ADSENSE_PUBLISHER_ID=ca-pub-...` to publish the verification tag and `/ads.txt`;
 set `ADSENSE_ENABLED=1` only after AdSense approval and advertising consent setup.
-Both integrations are off by default and never load in local mode or on error pages.
+This site's public IDs are configured as defaults; environment variables override them
+(an empty value disables the corresponding integration). Ad serving stays off until explicitly enabled.
+Google tags never load in local mode or on error pages.
 Consent behavior can be checked with `node tools/test_privacy.cjs`.
 
 ## Future public hosting

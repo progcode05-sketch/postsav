@@ -123,8 +123,10 @@ def contact_email():
 
 def google_services():
     """Only validated public identifiers may reach tags or ads.txt."""
-    measurement = os.environ.get('GA_MEASUREMENT_ID', '').strip()
-    publisher = os.environ.get('ADSENSE_PUBLISHER_ID', '').strip()
+    # Public IDs for this site; environment overrides (including empty values)
+    # remain available for other deployments and for disabling integrations.
+    measurement = os.environ.get('GA_MEASUREMENT_ID', 'G-JMK4H2LRD3').strip()
+    publisher = os.environ.get('ADSENSE_PUBLISHER_ID', 'ca-pub-7254853329853324').strip()
     measurement = measurement if re.fullmatch(r'G-[A-Z0-9]{4,20}', measurement) else ''
     publisher = publisher if re.fullmatch(r'ca-pub-[0-9]{16}', publisher) else ''
     enabled = os.environ.get('ADSENSE_ENABLED', '').lower() in ('1', 'true', 'yes', 'on')

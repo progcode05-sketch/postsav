@@ -1,6 +1,6 @@
 # Google Analytics and AdSense setup
 
-Both services are disabled by default. Identifiers are public configuration, not passwords. Never supply your Google password or account recovery codes.
+This site's public identifiers are configured: Analytics `G-JMK4H2LRD3` and AdSense `ca-pub-7254853329853324`. Public pages offer opt-in Analytics and publish AdSense verification and ads.txt. Advertising remains disabled until explicitly enabled. Environment variables override the IDs; set an empty value to disable either integration. Local mode never loads these services. Identifiers are public configuration, not passwords. Never supply your Google password or account recovery codes.
 
 ## Google Analytics
 
