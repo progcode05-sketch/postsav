@@ -116,6 +116,10 @@ def linkedin_post(url):
     soup = BeautifulSoup(raw, 'html.parser')
     post = soup.select_one('.main-feed-activity-card[data-activity-urn]')
     if not post:
+        # LinkedIn may return HTTP 200 for a signup/login page. This is an
+        # access restriction, not a malformed share URL or an empty video.
+        if soup.select_one('form[action*="/signup/"], form[action*="/uas/login-submit"], #dust-var-postOnboardingRedirectUrl'):
+            raise ValueError('LinkedIn requires sign-in to view this post and did not provide a public video or attachment. This downloader cannot fetch sign-in-only posts. Ask the author for the original file or a publicly accessible post.')
         raise ValueError('LinkedIn did not expose this post. It may require sign-in, be private, or be temporarily blocked.')
     meta = lambda key: (soup.find('meta', property=key) or {}).get('content', '')
     assets, warnings = [], []

@@ -41,6 +41,27 @@ class DownloaderTests(unittest.TestCase):
         with patch('app.requests.get', return_value=response):
             self.assertIsNone(app.clean_url('https://lnkd.in/p/AbCd_123'))
 
+    def test_public_ugc_post_short_link_video_is_resolved_and_extracted(self):
+        target = 'https://www.linkedin.com/posts/keagan-stokoe_topic-ugcPost-7510392940888756226-U5BC'
+        redirect = MagicMock(is_redirect=True)
+        redirect.headers = {'Location': target + '/?utm_source=share'}
+        page = b'''<article class="main-feed-activity-card" data-activity-urn="urn:li:ugcPost:7510392940888756226"><video data-sources='[{"type":"video/mp4","src":"https://media.licdn.com/video.mp4","data-bitrate":100}]'></video></article>'''
+        with patch('app.requests.get', return_value=redirect), patch('media_sources.fetch', return_value=(page, 'text/html')):
+            result = self.client.post('/api/info', json={'url': 'https://lnkd.in/p/ejQkjf9E', 'ack': True})
+        self.assertEqual(result.status_code, 200)
+        self.assertEqual(result.json['url'], target)
+        self.assertEqual(result.json['assets'][0]['kind'], 'video')
+        self.assertEqual(app.get_session(result.json['session'])['assets'][0]['source'], 'https://media.licdn.com/video.mp4')
+
+    def test_linkedin_signup_page_reports_access_restriction_without_session(self):
+        page = b'<title>Sign Up | LinkedIn</title><form action="/signup/api/cors/createAccount"></form>'
+        with patch('media_sources.fetch', return_value=(page, 'text/html')):
+            result = self.client.post('/api/info', json={'url': self.post['url'], 'ack': True})
+        self.assertEqual(result.status_code, 502)
+        self.assertIn('requires sign-in', result.json['error'])
+        self.assertIn('original file', result.json['error'])
+        self.assertEqual(app.sessions, {})
+
     def test_info_hides_download_sources(self):
         with patch('app.linkedin_post', return_value=self.post):
             r = self.client.post('/api/info', json={'url': self.post['url']})
